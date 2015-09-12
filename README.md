@@ -130,7 +130,7 @@ subscribe('$Anwesenheit', {change: true}, function () {
 
 ### Api Docs
 
-see http://hobbyquaker.github.io/mqtt-smarthome
+see http://hobbyquaker.github.io/mqtt-smarthome/
 
 
 ## License
