@@ -1,7 +1,7 @@
 {
   "name": "mqtt-scripts",
   "version": "0.10.0",
-  "description": "",
+  "description": "Node.js based script runner for use in MQTT based Smart Home environments",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -23,8 +23,35 @@
     "node": ">= 0.10.0",
     "iojs": ">= 1.0.0"
   },
+  "preferGlobal": true,
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-jsdoc": "^0.6.8"
-  }
+  },
+  "directories": {
+    "doc": "doc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hobbyquaker/mqtt-scripts"
+  },
+  "keywords": [
+    "MQTT",
+    "javascript",
+    "coffeescript",
+    "node.js",
+    "npm",
+    "sandbox",
+    "vm",
+    "Smart",
+    "Home",
+    "Internet",
+    "of",
+    "Things",
+    "IoT"
+  ],
+  "bugs": {
+    "url": "https://github.com/hobbyquaker/mqtt-scripts/issues"
+  },
+  "homepage": "https://github.com/hobbyquaker/mqtt-scripts"
 }
