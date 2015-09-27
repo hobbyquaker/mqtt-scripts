@@ -5,23 +5,14 @@ var pkg =               require('./package.json');
 var log =               require('yalm');
 
 log.setLevel(['debug', 'info', 'warn', 'error'].indexOf(config.verbosity) !== -1 ? config.verbosity : 'info');
+log.info(pkg.name + ' ' + pkg.version + ' starting');
 
 var modules = {
-    'vm':               require('vm'),
     'fs':               require('fs'),
-    'dgram':            require('dgram'),
-    'domain':           require('domain'),
-    'crypto':           require('crypto'),
-    'dns':              require('dns'),
-    'events':           require('events'),
-    'http':             require('http'),
-    'https':            require('https'),
-    'net':              require('net'),
-    'os':               require('os'),
     'path':             require('path'),
-    'util':             require('util'),
-    'child_process':    require('child_process'),
-    'coffee-compiler':  require('coffee-compiler'),
+    'vm':               require('vm'),
+    'domain':           require('domain'),
+
     'mqtt':             require('mqtt'),
     'watch':            require('watch'),
     'node-schedule':    require('node-schedule'),
@@ -34,7 +25,8 @@ var fs =                modules.fs;
 var path =              modules.path;
 var watch =             modules.watch;
 var scheduler =         modules['node-schedule'];
-var suncalc =           modules['suncalc'];
+var suncalc =           modules.suncalc;
+
 
 var status =            {};
 var scripts =           {};
@@ -42,7 +34,90 @@ var subscriptions =     [];
 
 var _global =           {};
 
-log.info(pkg.name + ' ' + pkg.version + ' starting');
+
+// Sun scheduling
+
+var sunEvents =         [];
+var sunTimes =          [/* yesterday */ {}, /* today */ {}, /* tomorrow */ {}];
+
+function calculateSunTimes() {
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0, 0);
+    var yesterday = new Date(now.getTime() - 86400000); //(24 * 60 * 60 * 1000));
+    var tomorrow = new Date(now.getTime() + 86400000); //(24 * 60 * 60 * 1000));
+    sunTimes = [
+        suncalc.getTimes(yesterday, config.l, config.m),
+        suncalc.getTimes(today, config.l, config.m),
+        suncalc.getTimes(tomorrow, config.l, config.m)
+    ];
+    log.debug('calculatedSunTimes', sunTimes);
+}
+
+calculateSunTimes();
+
+scheduler.scheduleJob('0 0 * * *', function () {
+    // re-calculate every day
+    calculateSunTimes();
+    // schedule events for this day
+    sunEvents.forEach(function (event) {
+        sunScheduleEvent(event);
+    });
+    log.info('re-scheduled', sunEvents.length, 'sun events');
+});
+
+function sunScheduleEvent(obj, shift) {
+    // shift = -1 -> yesterday
+    // shift = 0 -> today
+    // shift = 1 -> tomorrow
+    var event = sunTimes[1 + (shift || 0)][obj.pattern];
+    log.debug('sunScheduleEvent', obj.pattern, obj.options, shift);
+    var now = new Date();
+
+    if (event.toString() !== 'Invalid Date') {
+        // Event will occur today
+
+        if (obj.options.shift) event = new Date(event.getTime() + ((parseFloat(obj.options.shift) || 0) * 1000));
+
+        if (event.getDate() !== now.getDate()) {
+            // event shifted to previous or next day
+            sunScheduleEvent(obj, (event < now) ? 1 : -1);
+            return;
+        }
+
+        if ((now.getTime() - event.getTime()) < 1000) {
+            // event is less than 1s in the past or occurs later this day
+
+            if (obj.options.random) {
+                event = new Date(
+                    event.getTime() +
+                    (Math.floor((parseFloat(obj.options.random) || 0) * Math.random()) * 1000)
+                );
+            }
+
+            if ((event.getTime() - now.getTime()) < 1000)  {
+                // event is less than 1s in the future or already in the past
+                // (options.random may have shifted us further to the past)
+                // call the callback immediately!
+                obj.domain.bind(obj.callback)();
+
+            } else {
+                // schedule the event!
+                scheduler.scheduleJob(event, obj.domain.bind(obj.callback));
+                log.debug('scheduled', obj.pattern, obj.options, event);
+            }
+
+        } else {
+            log.debug(obj.pattern, obj.options, 'is more than 1s the past', now, event);
+        }
+
+    } else {
+        log.debug(obj.pattern, 'doesn\'t occur today');
+    }
+}
+
+
+
+// MQTT
 
 var mqtt;
 mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/connected', payload: '0'}});
@@ -157,18 +232,25 @@ function stateChange(topic, state, oldState, msg) {
             if (options.change && (state.val === oldState.val)) return;
 
             delay = 0;
-            if (options.shift) delay += (options.shift * 1000);
-            if (options.random) delay += (options.random * Math.random() * 1000);
-            if (delay === 0) {
-                subs.callback(topic.replace(/^([^\/]+)\/status\/(.+)/, '$1//$2'), state, oldState);
-            } else {
-                delay = Math.floor(delay);
-                //log.debug('delaying', subs.topic, delay);
-                setTimeout(function () {
-                    subs.callback(topic.replace(/^([^\/]+)\/status\/(.+)/, '$1//$2'), state, oldState);
-                }, delay);
-            }
+            if (options.shift) delay += ((parseFloat(options.shift) || 0) * 1000);
+            if (options.random) delay += ((parseFloat(options.random) || 0)  * Math.random() * 1000);
+
+            delay = Math.floor(delay);
+
+            setTimeout(function () {
+                /**
+                 * @callback subscribeCallback
+                 * @param {string} topic - the topic that triggered this callback. +/status/# will be replaced by +//#
+                 * @param {mixed} val - the val property of the new state
+                 * @param {object} obj - new state - the whole state object (e.g. {"val": true, "ts": 12346345, "lc": 12346345} )
+                 * @param {object} objPrev - previous state - the whole state object
+                 * @param {object} msg - the mqtt message as received from MQTT.js
+                 */
+                subs.callback(topic.replace(/^([^\/]+)\/status\/(.+)/, '$1//$2'), state.val, state, oldState, msg);
+            }, delay);
+
         }
+
     });
 }
 
@@ -192,7 +274,10 @@ function createScript(source, name) {
     }
 }
 
+
 function runScript(script, name) {
+
+    var scriptDir = path.dirname(path.resolve(name));
 
 
     log.debug(name, 'creating domain');
@@ -221,9 +306,9 @@ function runScript(script, name) {
                     tmp = md;
                     if (fs.existsSync(path.join(scriptDir, 'node_modules', md, 'package.json'))) {
                         tmp = './' + path.relative(__dirname, path.join(scriptDir, 'node_modules', md));
+                        tmp = path.resolve(tmp);
                     }
                 }
-                tmp = path.resolve(tmp);
                 Sandbox.log.debug('require', tmp);
                 modules[md] = require(tmp);
                 return modules[md];
@@ -240,7 +325,8 @@ function runScript(script, name) {
         },
 
         /**
-         * @name log
+         * @class log
+         * @classdesc Log to stdout/stderr. Messages are prefixed with a timestamp and the calling scripts path.
          */
         log: {
             /**
@@ -293,29 +379,28 @@ function runScript(script, name) {
          * @method subscribe
          * @param {(string|string[])} topic - topic or array of topics to subscribe
          * @param {Object} [options]
-         * @param {number} options.shift - delay execution in seconds. May be negative.
-         * @param {number} options.random - random delay execution in seconds.
-         * @param {function} [callback]
-         *
+         * @param {number} [options.shift] - delay execution in seconds. Has to be positive
+         * @param {number} [options.random] - random delay execution in seconds. Has to be positive
+         * @param {boolean} [options.change] - if set to true callback is only called if val changed
+         * @param {boolean} [options.retain] - if set to true callback is also called on retained messages
+         * @param {subscribeCallback} callback
          */
-        subscribe:  function Sandbox_subscribe(topic, /* optional */ options, /* optional */ callback) {
-            if ((typeof topic === 'undefined')) {
+        subscribe:  function Sandbox_subscribe(topic, /* optional */ options, callback) {
+            if (typeof topic === 'undefined') {
                 throw(new Error('argument topic missing'));
             }
 
-            if (arguments.length === 2 || typeof arguments[2] === 'undefined') {
+            if (arguments.length === 2) {
 
-                if (typeof arguments[1] === 'function') {
-                    callback = arguments[1];
-                } else {
-                    options = arguments[1] || {};
-                }
+                if (typeof arguments[1] !== 'function') throw new Error('callback is not a function');
+
+                callback = arguments[1];
+                options = {};
+
 
             } else if (arguments.length === 3) {
 
-                if ((typeof arguments[2] !== 'function')) {
-                    throw(new Error('argument type mismatch ' + typeof arguments[2]));
-                }
+                if (typeof arguments[2] !== 'function') throw new Error('callback is not a function');
                 options = arguments[1] || {};
                 callback = arguments[2];
 
@@ -341,81 +426,116 @@ function runScript(script, name) {
 
         },
         /**
-         * Schedule an event by cron-syntax, a date object or a suncalc string
+         * Schedule recurring and one-shot events
          * @method schedule
-         * @param {(string|Object)} pattern - schedule pattern, date object or suncalc event
+         * @param {(string|Date|Object|mixed[])} pattern - pattern or array of patterns. May be cron style string, Date object or node-schedule object literal. See {@link https://github.com/tejasmanohar/node-schedule/wiki}
          * @param {Object} [options]
-         * @param {number} options.shift - delay execution in seconds. May be negative.
-         * @param {number} options.random - random delay execution in seconds.
-         * @param {function} callback
-         * @example subscribe('0 * * * *', callback); // Call callback every hour
-         * subscribe('sunrise', {shift: -900}, callback); // Call callback 15 minutes before sunrise
+         * @param {number} [options.random] - random delay execution in seconds. Has to be positive
+         * @param {function} callback - is called with no arguments
+         * @example // every full Hour.
+         * schedule('0 * * * *', callback);
+         *
+         * // Monday till friday, random between 7:30am an 8:00am
+         * schedule('30 7 * * 1-5', {random: 30 * 60}, callback);
+         *
+         * // once on 21. December 2018 at 5:30am
+         * schedule(new Date(2018, 12, 21, 5, 30, 0), callback);
+         *
+         * // every Sunday at 2:30pm
+         * schedule({hour: 14, minute: 30, dayOfWeek: 0}, callback);
+         * @see {@link sunSchedule} for scheduling based on sun position.
          */
         schedule:   function Sandbox_schedule(pattern, /* optional */ options, callback) {
-            if (arguments.length === 2) {
-                if (typeof arguments[1] !== 'function') {
-                    throw(new Error('argument type mismatch'));
-                }
-                options = {};
-                callback = arguments[1];
-            } else if (arguments.length === 3) {
-                if (typeof arguments[2] !== 'function') {
-                    throw(new Error('argument type mismatch'));
-                }
-                options = arguments[1];
-                callback = arguments[2];
 
+            if (arguments.length === 2) {
+                if (typeof arguments[1] !== 'function') throw new Error('callback is not a function');
+                callback = arguments[1];
+                options = {};
+            } else if (arguments.length === 3) {
+                if (typeof arguments[2] !== 'function') throw new Error('callback is not a function');
+                options = arguments[1] || {};
+                callback = arguments[2];
             } else {
                 throw(new Error('wrong number of arguments'));
             }
 
-            log.debug('schedule', pattern, options);
-
-
-            if (['sunrise', 'sunriseEnd', 'goldenHourEnd', 'solarNoon', 'goldenHour', 'sunsetStart', 'sunset', 'dusk',
-                    'nauticalDusk', 'night', 'nadir', 'nightEnd', 'nauticalDawn', 'dawn'].indexOf(pattern) !== -1) {
-                // Astro schedule
-
-                var event = astro(pattern, options);
-
-                log.debug('astro', pattern, event);
-
-                if (event.toString !== 'Invalid Date') {
-
-                    scheduler.scheduleJob(event, function () {
-                        // Re-schedule in 12 hours // TODO does that really make sense?
-                        setTimeout(function () {
-                            Sandbox.schedule(pattern, options, callback);
-                        }, 12 * 60 * 60 * 1000);
-
-                        scriptDomain.bind(callback);
-                        callback();
-                    });
-
-                } else {
-                    // event does not occur today - re-schedule next UTC midnight
-                    var midnight = new Date();
-                    midnight.setDate(midnight.getDate() + 1);
-                    midnight.setUTCHours(0,0,0,0);
-
-                    scheduler.scheduleJob(midnight, function () {
-                        Sandbox.schedule(pattern, options, callback);
-                    });
-                }
-
-            } else {
-
-                if (options && options.random) {
-                    scheduler.scheduleJob(pattern, function () {
-                        setTimeout(function () {
-                            scriptDomain.bind(callback);
-                            callback();
-                        }, options.random * 1000 * Math.random());
-                    });
-                } else {
-                    scheduler.scheduleJob(pattern, scriptDomain.bind(callback));
-                }
+            if (typeof pattern === 'object' && pattern.length) {
+                pattern = Array.prototype.slice.call(topic);
+                pattern.forEach(function (pt) {
+                    Sandbox.sunSchedule(pt, options, callback);
+                });
+                return;
             }
+
+            log.debug('schedule()', pattern, options, typeof callback);
+
+            if (options.random) {
+                scheduler.scheduleJob(pattern, function () {
+                    setTimeout(scriptDomain.bind(callback), (parseFloat(options.random) || 0) * 1000 * Math.random());
+                });
+            } else {
+                scheduler.scheduleJob(pattern, scriptDomain.bind(callback));
+            }
+
+
+        },
+        /**
+         * Schedule a recurring event based on sun position
+         * @method sunSchedule
+         * @param {string|string[]} pattern - a suncalc event or an array of suncalc events. See {@link https://github.com/mourner/suncalc}
+         * @param {Object} [options]
+         * @param {number} [options.shift] - delay execution in seconds. Allowed Range: -86400...86400 (+/- 24h)
+         * @param {number} [options.random] - random delay execution in seconds.
+         * @param {function} callback - is called with no arguments
+         * @example // Call callback 15 minutes before sunrise
+         * sunSchedule('sunrise', {shift: -900}, callback);
+         *
+         * // Call callback random 0-15 minutes after sunset
+         * sunSchedule('sunset', {random: 900}, callback);
+         * @see {@link schedule} for time based scheduling.
+         */
+        sunSchedule: function Sandbox_sunSchedule(pattern, /* optional */ options, callback) {
+
+            if (arguments.length === 2) {
+                if (typeof arguments[1] !== 'function') throw new Error('callback is not a function');
+                callback = arguments[1];
+                options = {};
+            } else if (arguments.length === 3) {
+                if (typeof arguments[2] !== 'function') throw new Error('callback is not a function');
+                options = arguments[1] || {};
+                callback = arguments[2];
+            } else {
+                throw new Error('wrong number of arguments');
+            }
+
+            if ((typeof options.shift !== 'undefined') && (options.shift < -86400 || options.shift > 86400)) {
+                throw new Error('options.shift out of range');
+            }
+
+            if (typeof pattern === 'object' && pattern.length) {
+                pattern = Array.prototype.slice.call(topic);
+                pattern.forEach(function (pt) {
+                    Sandbox.sunSchedule(pt, options, callback);
+                });
+                return;
+            }
+
+            log.debug('sunSchedule', pattern, options);
+
+            var event = sunTimes[0][pattern];
+            if (typeof event === 'undefined') throw new Error('unknown suncalc event ' + pattern);
+
+            var obj = {
+                pattern: pattern,
+                options: options,
+                callback: callback,
+                context: Sandbox,
+                domain: scriptDomain
+            };
+
+            sunEvents.push(obj);
+
+            sunScheduleEvent(obj);
 
         },
         /**
@@ -449,7 +569,7 @@ function runScript(script, name) {
          * Set a value on one or more topics
          * @method setValue
          * @param {(string|string[])} topic - topic or array of topics to set value on
-         * @param {*} val
+         * @param {mixed} val
          */
         setValue:   function Sandbox_setValue(topic, val) {
 
@@ -489,7 +609,7 @@ function runScript(script, name) {
         /**
          * @method getValue
          * @param {string} topic
-         * @returns {*} the topics value
+         * @returns {mixed} the topics value
          */
         getValue:   function Sandbox_getValue(topic) {
             topic = topic.replace(/^\$/, config.s + '/status/');
@@ -501,11 +621,11 @@ function runScript(script, name) {
          * @method link
          * @param {(string|string[])} source - topic or array of topics to subscribe
          * @param {(string|string[])} target - topic or array of topics to publish
-         * @param {*} [value] - value to publish. If omitted the sources value is published.
+         * @param {mixed} [value] - value to publish. If omitted the sources value is published.
          */
         link:       function Sandbox_link(source, target, /* optional */ value) {
-            Sandbox.subscribe(source, function (topic, msg) {
-                var val = (typeof value === 'undefined') ? msg.val : value;
+            Sandbox.subscribe(source, function (topic, val) {
+                val = (typeof value === 'undefined') ? val : value;
                 log.debug('link', source, target, val);
                 Sandbox.setValue(target, val);
             });
@@ -515,8 +635,9 @@ function runScript(script, name) {
          * @method getProp
          * @param {string} topic
          * @param {...string} [property] - the property to retrieve. May be repeated for nested properties. If omitted the whole topic object is returned.
-         * @returns {*} the topics properties value
-         * @example getProp('hm//Bewegungsmelder Keller/MOTION', 'ts'); // returns the timestamp of a given topic
+         * @returns {mixed} the topics properties value
+         * @example // returns the timestamp of a given topic
+         * getProp('hm//Bewegungsmelder Keller/MOTION', 'ts');
          */
         getProp:    function Sandbox_getProp(topic /*, optional property, optional nested property, ... */) {
             topic = topic.replace(/^([^/]+)\/\/(.+)$/, '$1/status/$2');
@@ -541,13 +662,16 @@ function runScript(script, name) {
         error: Sandbox.log.error
     };
 
-    var scriptDir = path.dirname(path.resolve(name));
 
     log.debug(name, 'contextifying sandbox');
     var context = vm.createContext(Sandbox);
 
 
     scriptDomain.on('error', function (e) {
+        if (!e.stack) {
+            log.error.apply(log, [name + ' unkown exception']);
+            return;
+        }
         var lines = e.stack.split('\n');
         var stack = [];
         for (var i = 0; i < lines.length; i++) {
@@ -582,6 +706,12 @@ function loadScript(file) {
 
             if (file.match(/\.coffee$/)) {
                 // CoffeeScript
+
+                if (!modules['coffee-compiler']) {
+                    log.info('loading coffee-compiler');
+                    modules['coffee-compiler'] = require('coffee-compiler');
+                }
+
                 log.debug(file, 'transpiling');
                 modules['coffee-compiler'].fromSource(src.toString(), {sourceMap: false, bare: true}, function (err, js) {
                     if (err) {
@@ -663,35 +793,6 @@ function start() {
 
 }
 
-function astro(pattern, options, start) {
-
-    var now = new Date();
-    start = start || new Date();
-    var sunTimes = suncalc.getTimes(start, config.l, config.m);
-
-    var event = sunTimes[pattern];
-
-    if (event.toString === 'Invalid Date') return event;
-
-    if (options && typeof options.shift !== 'undefined') {
-        event = new Date(event.getTime() + (options.shift * 1000));
-    }
-
-    if (options && typeof options.random !== 'undefined') {
-        event = new Date(event.getTime() + Math.floor(options.random * 1000 * Math.random()));
-    }
-
-    if (event < now) {
-        // Event is in the past
-        log.debug(pattern, 'in the past', event, '<', now);
-        var tomorrow = new Date();
-        tomorrow.setDate(start.getDate() + 1);
-        tomorrow.setUTCHours(0,0,0,0);
-        return astro(pattern, options, tomorrow);
-    } else {
-        return event;
-    }
-}
 
 process.on('SIGINT', function () {
     log.info('got SIGINT. exiting.');

@@ -8,32 +8,63 @@ It follows the [mqtt-smarthome](https://github.com/mqtt-smarthome/mqtt-smarthome
 
 Mqtt-scripts could also be seen as something like "Node-RED without GUI"
 
+### Getting started
 
-## Documentation
+Prerequisites: mqtt-scripts needs Node.js >= 0.10 or io.js including npm.
 
-#### Getting started
-
-Prerequisites: mqtt-scripts needs Node.js >= 0.10 or io.js including npm. Node.js 4.0 is recommended.
+* Install mqtt-scripts globally:
 
 ```sudo npm install -g mqtt-scripts```
 
+* Create a folder from where mqtt-scripts will load the scripts:
 
-Create a folder from where mqtt-scripts will load the scripts:
+```mkdir -p /opt/mqtt-smarthome/scripts```
 
-```mkdir /opt/mqtt-scripts```
+* Create a folder to install node modules that can be used in the scripts:
+
+```mkdir /opt/mqtt-smarthome/scripts/node_modules```    
+(You can then just use npm install in the directory /opt/mqtt-smarthome/scripts)
+
+* Put some files in you script dir:
+
+```echo "log.info('my first script!')" > /opt/mqtt-smarthome/scripts/test1.js
+echo "log.info 'get ma a coffee' > /opt/mqtt-smarthome/scripts/test1.coffee```   
+
+* Start mqtt-scripts
+
+```mqtt-scripts -d /opt/mqtt-smarthome/scripts```  
 
 
-Start mqtt-scripts
+### Command Line Options
 
-```mqtt-scripts -d /opt/mqtt-scripts```
+<pre>
+Usage: mqtt-scripts [options]
 
+Options:
+  -v, --verbosity          possible values: "error", "warn", "info", "debug"
+                                                               [default: "info"]
+  -n, --name               instance name. used as mqtt client id and as prefix
+                           for connected topic                [default: "logic"]
+  -s, --variable-prefix    topic prefix for $ substitution (shorthand for
+                           variables, see docs)                 [default: "var"]
+  -t, --disable-variables  disable variable feedback (see docs)
+                                                                [default: false]
+  -u, --url                mqtt broker url. See https://github.com/mqttjs/MQTT.
+                           js#connect-using-a-url  [default: "mqtt://127.0.0.1"]
+  -h, --help               Show help                                  
+  -d, --dir                directory to scan for .js and .coffee files. can be
+                           used multiple times.
+  -w, --disable-watch      disable file watching (don't exit process on file
+                           changes)                             
+  --version                Show version number                        
+  -l, --latitude           Coordinates are needed for the sunSchedule method                                  
+  -m, --longitude                                             
+</pre>
 
-Hint: Use [pm2](https://github.com/Unitech/pm2) to control your mqtt-scripts processes, pm2 will also take care of restarting eventually crashed
-processes and offers comfortable access to the log output.
+If you're running multiple instances of mqtt-scripts you have to decide which one should handle variables and disable 
+the variables on all other instances with the --disable-variable option.
 
-
-
-### Examples
+### Script Examples
 
 #### Use hm2mqtt and hue2mqtt to control a hue lamp with a homematic remote control
 
@@ -126,11 +157,9 @@ subscribe('$Anwesenheit', {change: true}, function () {
 ```
 
 
-
-
 ### Api Docs
 
-see https://hobbyquaker.github.io/mqtt-smarthome
+see https://hobbyquaker.github.io/mqtt-scripts
 
 
 ## License
