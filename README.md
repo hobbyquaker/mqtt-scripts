@@ -27,8 +27,10 @@ Prerequisites: mqtt-scripts needs Node.js >= 0.10 or io.js including npm.
 
 * Put some files in you script dir:
 
-```echo "log.info('my first script!')" > /opt/mqtt-smarthome/scripts/test1.js
-echo "log.info 'get ma a coffee' > /opt/mqtt-smarthome/scripts/test1.coffee```   
+```
+echo "log.info('my first script!')" > /opt/mqtt-smarthome/scripts/test1.js
+echo "log.info 'get ma a coffee' > /opt/mqtt-smarthome/scripts/test1.coffee
+```   
 
 * Start mqtt-scripts
 
