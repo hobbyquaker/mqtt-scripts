@@ -43,8 +43,8 @@ var sunTimes =          [/* yesterday */ {}, /* today */ {}, /* tomorrow */ {}];
 function calculateSunTimes() {
     var now = new Date();
     var today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0, 0);
-    var yesterday = new Date(now.getTime() - 86400000); //(24 * 60 * 60 * 1000));
-    var tomorrow = new Date(now.getTime() + 86400000); //(24 * 60 * 60 * 1000));
+    var yesterday = new Date(today.getTime() - 86400000); //(24 * 60 * 60 * 1000));
+    var tomorrow = new Date(today.getTime() + 86400000); //(24 * 60 * 60 * 1000));
     sunTimes = [
         suncalc.getTimes(yesterday, config.l, config.m),
         suncalc.getTimes(today, config.l, config.m),
@@ -78,7 +78,7 @@ function sunScheduleEvent(obj, shift) {
 
         if (obj.options.shift) event = new Date(event.getTime() + ((parseFloat(obj.options.shift) || 0) * 1000));
 
-        if (event.getDate() !== now.getDate()) {
+        if ((event.getDate() !== now.getDate()) && (typeof shift === 'undefined')) {
             // event shifted to previous or next day
             sunScheduleEvent(obj, (event < now) ? 1 : -1);
             return;
