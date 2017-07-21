@@ -16,7 +16,7 @@
     "node-schedule": "0.2.9",
     "suncalc": "^1.6.0",
     "watch": "0.16.0",
-    "yalm": "^2.0.0",
+    "yalm": "^4.0.2",
     "yargs": "3.13.0"
   },
   "engines": {
