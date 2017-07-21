@@ -34,7 +34,7 @@ var config = require('yargs')
         'w': false
     })
     .config('config')
-    .version(pkg.name + ' ' + pkg.version + '\n', 'version')
+    .version()
     .help('help')
     .argv;
 
