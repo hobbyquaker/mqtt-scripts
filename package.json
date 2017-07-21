@@ -23,9 +23,11 @@
   },
   "preferGlobal": true,
   "devDependencies": {
+    "camo-purge": "^1.0.2",
     "grunt": "^0.4.5",
     "grunt-cli": "^1.2.0",
-    "grunt-jsdoc": "^0.6.10"
+    "grunt-jsdoc": "^0.6.10",
+    "xo": "^0.18.2"
   },
   "directories": {
     "doc": "doc"

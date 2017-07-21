@@ -10,28 +10,28 @@ var config = require('yargs')
     .describe('d', 'directory to scan for .js and .coffee files. can be used multiple times.')
     .describe('w', 'disable file watching (don\'t exit process on file changes)')
     .alias({
-        'c': 'config',
-        'd': 'dir',
-        'h': 'help',
-        's': 'variable-prefix',
-        't': 'disable-variables',
-        'l': 'latitude',
-        'm': 'longitude',
-        'n': 'name',
-        'u': 'url',
-        'v': 'verbosity',
-        'w': 'disable-watch'
+        c: 'config',
+        d: 'dir',
+        h: 'help',
+        s: 'variable-prefix',
+        t: 'disable-variables',
+        l: 'latitude',
+        m: 'longitude',
+        n: 'name',
+        u: 'url',
+        v: 'verbosity',
+        w: 'disable-watch'
 
     })
     .default({
-        'u': 'mqtt://127.0.0.1',
-        'l': 48.7408,
-        'm': 9.1778,
-        'n': 'logic',
-        's': 'var',
-        'v': 'info',
-        't': false,
-        'w': false
+        u: 'mqtt://127.0.0.1',
+        l: 48.7408,
+        m: 9.1778,
+        n: 'logic',
+        s: 'var',
+        v: 'info',
+        t: false,
+        w: false
     })
     .config('config')
     .version()
