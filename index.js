@@ -721,6 +721,8 @@ function runScript(script, name) {
             return (new Date()).getTime();
         },
         /**
+         *
+         * @method age
          * returns the amount of seconds since last change of the value
          * @param topic
          * @returns {number} seconds since last change
