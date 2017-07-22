@@ -1,8 +1,0 @@
-{
-  "templates": {
-    "default": {
-      "outputSourceFiles": false,
-      "layoutFile": "layout.tmpl"
-    }
-  }
-}
