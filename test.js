@@ -327,18 +327,44 @@ describe('setting variables', () => {
         }, 2000);
 
     });
-    it('should publish a bool', function (done) {
+    it('should publish a boolean true', function (done) {
         this.timeout(20000);
-        mqttSubscribe('var/status/testbool', payload => {
+        mqttSubscribe('var/status/testbool1', payload => {
             const state = JSON.parse(payload);
             if (state.val === true) {
-                mqtt.unsubscribe('var/status/testbool');
+                mqtt.unsubscribe('var/status/testbool1');
                 done();
             }
         });
         setTimeout(function () {
-            mqtt.publish('var/set/testbool', 'true');
+            mqtt.publish('var/set/testbool1', 'true');
         }, 3000);
+    });
+    it('should publish a boolean false', function (done) {
+        this.timeout(20000);
+        mqttSubscribe('var/status/testbool2', payload => {
+            const state = JSON.parse(payload);
+            if (state.val === false) {
+                mqtt.unsubscribe('var/status/testbool2');
+                done();
+            }
+        });
+        setTimeout(function () {
+            mqtt.publish('var/set/testbool2', 'false');
+        }, 4000);
+    });
+    it('should publish an array', function (done) {
+        this.timeout(20000);
+        mqttSubscribe('var/status/array', payload => {
+            const state = JSON.parse(payload);
+            if (Array.isArray(state.val) && state.val.length === 3) {
+                mqtt.unsubscribe('var/status/array');
+                done();
+            }
+        });
+        setTimeout(function () {
+            mqtt.publish('var/set/array', '[1,2,3]');
+        }, 5000);
     });
 });
 
