@@ -442,6 +442,11 @@ returns the amount of seconds since last change of the value(topic) ⇒ <code>nu
 | objPrev | <code>object</code> | previous state - the whole state object |
 | msg | <code>object</code> | the mqtt message as received from MQTT.js |
 
+
 ## License
 
+
 MIT © [Sebastian Raff](https://github.com/hobbyquaker)
+
+[mit-badge]: https://img.shields.io/badge/License-MIT-blue.svg?style=flat
+[mit-url]: LICENSE
