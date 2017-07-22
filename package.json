@@ -23,15 +23,15 @@
   },
   "preferGlobal": true,
   "devDependencies": {
-    "camo-purge": "^1.0.2",
-    "coveralls": "^2.13.1",
-    "gulp": "^3.9.1",
-    "jsdoc-to-markdown": "^3.0.0",
-    "mocha": "^3.4.2",
-    "nyc": "^11.0.3",
-    "should": "^11.2.1",
-    "stream-splitter": "^0.3.2",
-    "xo": "^0.18.2"
+    "camo-purge": "latest",
+    "coveralls": "latest",
+    "gulp": "latest",
+    "jsdoc-to-markdown": "latest",
+    "mocha": "latest",
+    "nyc": "latest",
+    "should": "latest",
+    "stream-splitter": "latest",
+    "xo": "latest"
   },
   "directories": {
     "doc": "doc"
