@@ -205,9 +205,7 @@ subscribe('$Anwesenheit', {change: true}, function () {
 </dd>
 <dt><a href="#now">now()</a> ⇒ <code>number</code></dt>
 <dd></dd>
-<dt><a href="#age
-returns the amount of seconds since last change of the value">age
-returns the amount of seconds since last change of the value(topic)</a> ⇒ <code>number</code></dt>
+<dt><a href="#age">age(topic)</a> ⇒ <code>number</code></dt>
 <dd></dd>
 </dl>
 
@@ -419,11 +417,9 @@ getProp('hm//Bewegungsmelder Keller/MOTION', 'ts');
 ## now() ⇒ <code>number</code>
 **Kind**: global function  
 **Returns**: <code>number</code> - ms since epoch  
-<a name="age
-returns the amount of seconds since last change of the value"></a>
+<a name="age"></a>
 
-## age
-returns the amount of seconds since last change of the value(topic) ⇒ <code>number</code>
+## age(topic) ⇒ <code>number</code>
 **Kind**: global function  
 **Returns**: <code>number</code> - seconds since last change  
 
