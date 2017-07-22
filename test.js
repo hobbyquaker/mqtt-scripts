@@ -23,9 +23,7 @@ let subIndex = 0;
 
 function subscribe(type, rx, cb) {
     subIndex += 1;
-    if (type === 'sim') {
-        simSubscriptions[subIndex] = {rx, cb};
-    } else if (type === 'ms') {
+    if (type === 'ms') {
         msSubscriptions[subIndex] = {rx, cb};
     }
     matchSubscriptions(type);
@@ -33,9 +31,7 @@ function subscribe(type, rx, cb) {
 }
 
 function unsubscribe(type, subIndex) {
-    if (type === 'sim') {
-        delete simSubscriptions[subIndex];
-    } else if (type === 'ms') {
+    if (type === 'ms') {
         delete msSubscriptions[subIndex];
     }
 }
@@ -56,8 +52,9 @@ function matchSubscriptions(type, data) {
     buf.forEach((line, index) => {
         Object.keys(subs).forEach(key => {
             const sub = subs[key];
-            if (line.match(sub.rx)) {
-                sub.cb(line);
+            let m;
+            if (m = line.match(sub.rx)) {
+                sub.cb(line, m);
                 delete subs[key];
                 buf.splice(index, 1);
             }
@@ -186,15 +183,8 @@ describe('testscripts/test1.js execution', () => {
             done();
         });
     });
-    it('should increase a number', function (done) {
-        this.timeout(20000);
-        mqttSubscribe('test/set/incr', payload => {
-            if (payload === '5') {
-                done();
-            }
-        });
-        mqtt.publish('test/status/incr', '4');
-    });
+
+
 });
 
 describe('testscripts/test2.coffee execution', () => {
@@ -225,6 +215,71 @@ describe('testscripts/test2.coffee execution', () => {
 });
 
 
+describe('subscribe(), setValue()', () => {
+    it('should increase a number', function (done) {
+        this.timeout(20000);
+        mqttSubscribe('test/set/incr', payload => {
+            if (payload === '5') {
+                done();
+            }
+        });
+        mqtt.publish('test/status/incr', '4');
+    });
+});
+
+describe('link()', () => {
+    it('should link one topic to another', function (done) {
+        this.timeout(20000);
+        mqttSubscribe('test/target', payload => {
+            if (payload === 'test') {
+                done();
+            }
+        });
+        mqtt.publish('test/src', 'test');
+    });
+    it('should link multiple topic to other topics', function (done) {
+        this.timeout(20000);
+        mqttSubscribe('test/target2', payload => {
+            if (payload === 'test') {
+                done();
+            }
+        });
+        mqtt.publish('test/src1', 'test');
+    });
+});
+
+describe('age()', () => {
+    it('should return an age of 5s', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /test\/target age ([0-9]+)/, (line, m) => {
+            if (m[1] === '5') {
+                done();
+            }
+        });
+    })
+});
+
+describe('getProp(), now()', () => {
+    it('should return a lastchange and a timestamp with ~5000ms difference', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /test\/target lc ([0-9]+) ([0-9]+)/, (line, m) => {
+            const elapsed = parseInt(m[2]) - parseInt(m[1]);
+            if (elapsed > 4800 && elapsed < 5200) {
+                done();
+            }
+        });
+    })
+});
+
+describe('schedule()', () => {
+    it('should excute a schedule callback', function (done) {
+        this.timeout(180000);
+        subscribe('ms', /schedule callback/, () => {
+            done();
+        });
+    });
+});
+
 describe('setting variables', () => {
     setTimeout(function () {
 
@@ -232,7 +287,6 @@ describe('setting variables', () => {
      it('should publish a number', function (done) {
          this.timeout(20000);
          mqttSubscribe('var/status/testnumber', payload => {
-             console.log(payload);
              const state = JSON.parse(payload);
              if (state.val === 1) {
                  done();
@@ -246,7 +300,6 @@ describe('setting variables', () => {
     it('should publish a string', function (done) {
         this.timeout(20000);
         mqttSubscribe('var/status/teststring', payload => {
-            console.log(payload);
             const state = JSON.parse(payload);
             if (state.val === 'test') {
                 done();
@@ -260,7 +313,6 @@ describe('setting variables', () => {
     it('should publish a bool', function (done) {
         this.timeout(20000);
         mqttSubscribe('var/status/testbool', payload => {
-            console.log(payload);
             const state = JSON.parse(payload);
             if (state.val === true) {
                 done();
@@ -269,14 +321,10 @@ describe('setting variables', () => {
         setTimeout(function () {
             mqtt.publish('var/set/testbool', 'true');
         }, 3000);
-
     });
-
 });
 
-
-
 setTimeout(() => {
-    ms2mqtt.kill();
+    ms.kill();
     process.exit(1);
-}, 30000);
+}, 240000);
