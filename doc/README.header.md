@@ -16,7 +16,7 @@ It follows the [mqtt-smarthome](https://github.com/mqtt-smarthome/mqtt-smarthome
 seen as something like "Node-RED without GUI"
 
 
-### Getting started
+# Getting started
 
 Prerequisites: mqtt-scripts needs Node.js >= 6.0.
 
@@ -45,7 +45,7 @@ echo "log.info 'get ma a coffee' > /opt/mqtt-smarthome/scripts/test1.coffee
 ```mqtt-scripts -d /opt/mqtt-smarthome/scripts```  
 
 
-### Command Line Options
+# Command Line Options
 
 <pre>
 Usage: mqtt-scripts [options]
@@ -75,7 +75,7 @@ If you're running multiple instances of mqtt-scripts you have to decide which on
 the variables on all other instances with the --disable-variable option.
 
 
-### Script Examples
+# Script Examples
 
 #### Use hm2mqtt and hue2mqtt to control a hue lamp with a homematic remote control
 
@@ -167,5 +167,5 @@ subscribe('$Anwesenheit', {change: true}, function () {
 });
 ```
 
-#### API
+# API
 
