@@ -12,7 +12,6 @@ var modules = {
     path: require('path'),
     vm: require('vm'),
     domain: require('domain'),
-
     mqtt: require('mqtt'),
     watch: require('watch'),
     'node-schedule': require('node-schedule'),
@@ -146,7 +145,6 @@ mqtt.on('error', function () {
 });
 
 mqtt.on('message', function (topic, payload, msg) {
-    // Log.debug('mqtt <', topic, payload, {retain: msg.retain, qos: msg.qos, dup: msg.dup});
 
     if (firstConnect && msg.retain) {
         // Retained message received - prolong the timeout
