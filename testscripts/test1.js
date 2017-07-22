@@ -17,6 +17,9 @@ link(['test/src1', 'test/src2'], ['test/target1', 'test/target2']);
 
 schedule('* * * * *', () => {
     log.info('schedule callback');
+    setTimeout(function () {
+        throw new Error('test exception!');
+    }, 2000);
 });
 
 log.info(require('./lib/libtest.js'));

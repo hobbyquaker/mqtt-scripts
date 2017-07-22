@@ -290,6 +290,15 @@ describe('schedule()', () => {
     });
 });
 
+describe('exception', () => {
+    it('should catch an exception occuring in a script', function (done) {
+        this.timeout(180000);
+        subscribe('ms', /testscripts\/test1\.js Error: test exception/, () => {
+            done();
+        });
+    });
+});
+
 describe('setting variables', () => {
     it('should publish a number', function (done) {
         this.timeout(20000);
