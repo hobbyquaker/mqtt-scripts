@@ -1,6 +1,5 @@
-var pkg = require('./package.json');
 var config = require('yargs')
-    .usage(pkg.name + ' ' + pkg.version + '\n' + pkg.description + '\n\nUsage: $0 [options]')
+    .usage('Usage: $0 [options]')
     .describe('v', 'possible values: "error", "warn", "info", "debug"')
     .describe('n', 'instance name. used as mqtt client id and as prefix for connected topic')
     .describe('s', 'topic prefix for $ substitution (shorthand for variables, see docs)')
