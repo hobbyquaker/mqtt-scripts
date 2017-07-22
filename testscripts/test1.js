@@ -23,3 +23,7 @@ schedule('* * * * *', () => {
 });
 
 log.info(require('./lib/libtest.js'));
+
+sunSchedule('sunrise', () => {
+    log.info('sunrise');
+});
