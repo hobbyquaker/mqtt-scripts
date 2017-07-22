@@ -4,8 +4,8 @@
   "description": "Node.js based script runner for use in MQTT based Smart Home environments",
   "main": "index.js",
   "scripts": {
-    "test": "camo-purge ; xo --space 4 --no-esnext --ignore test.js --ignore testscripts/test.js --ignore Gulpfile.js && nyc mocha test.js && nyc report --reporter=text-lcov | coveralls --force",
-    "testonly": "xo --space 4 --no-esnext --ignore test.js --ignore testscripts/test.js --ignore Gulpfile.js && nyc mocha test.js"
+    "test": "camo-purge ; xo --space 4 --no-esnext --ignore test.js --ignore testscripts/* --ignore Gulpfile.js && nyc mocha test.js && nyc report --reporter=text-lcov | coveralls --force",
+    "testonly": "xo --space 4 --no-esnext --ignore test.js --ignore testscripts/* --ignore Gulpfile.js && nyc mocha test.js"
   },
   "author": "Sebastian 'hobbyquaker' Raff <hq@ccu.io>",
   "license": "MIT",

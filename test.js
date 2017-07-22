@@ -144,24 +144,45 @@ describe('start daemon', () => {
             }
         });
     });
-    it('should load script file', function (done) {
+});
+
+describe('script loading', () => {
+    it('should load test1.js script file', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test\.js loading/, data => {
+        subscribe('ms', /testscripts\/test1\.js loading/, data => {
             done();
         });
     });
-    it('should execute script file', function (done) {
+    it('should execute test1.js script file', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test\.js running/, data => {
+        subscribe('ms', /testscripts\/test1\.js running/, data => {
+            done();
+        });
+    });
+    it('should load test2.coffee script file', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test2\.coffee loading/, data => {
+            done();
+        });
+    });
+    it('should transpile test2.coffee script file', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test2\.coffee transpiling/, data => {
+            done();
+        });
+    });
+    it('should execute test2.coffee script file', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test2\.coffee running/, data => {
             done();
         });
     });
 });
 
-describe('script execution', () => {
+describe('testscripts/test1.js execution', () => {
     it('should log a msg', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test\.js: test log/, data => {
+        subscribe('ms', /testscripts\/test1\.js: test log/, data => {
             done();
         });
     });
@@ -175,6 +196,34 @@ describe('script execution', () => {
         mqtt.publish('test/status/incr', '4');
     });
 });
+
+describe('testscripts/test2.coffee execution', () => {
+    it('should log a debug msg', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test2\.coffee: coffee debug/, data => {
+            done();
+        });
+    });
+    it('should log a info msg', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test2\.coffee: coffee info/, data => {
+            done();
+        });
+    });
+    it('should log a warn msg', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test2\.coffee: coffee warn/, data => {
+            done();
+        });
+    });
+    it('should log a error msg', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test2\.coffee: coffee error/, data => {
+            done();
+        });
+    });
+});
+
 
 describe('setting variables', () => {
     setTimeout(function () {
