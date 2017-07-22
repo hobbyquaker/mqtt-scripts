@@ -160,11 +160,13 @@ describe('start daemon', () => {
 
 describe('script execution', () => {
     it('should log a msg', function (done) {
+        this.timeout(20000);
         subscribe('ms', /testscripts\/test\.js: test log/, data => {
             done();
         });
     });
     it('should increase a number', function (done) {
+        this.timeout(20000);
         mqttSubscribe('test/set/incr', payload => {
             if (payload === '5') {
                 done();
@@ -179,7 +181,7 @@ describe('setting variables', () => {
 
     }, 1000);
      it('should publish a number', function (done) {
-
+         this.timeout(20000);
          mqttSubscribe('var/status/testnumber', payload => {
              console.log(payload);
              const state = JSON.parse(payload);
@@ -193,7 +195,7 @@ describe('setting variables', () => {
 
      });
     it('should publish a string', function (done) {
-
+        this.timeout(20000);
         mqttSubscribe('var/status/teststring', payload => {
             console.log(payload);
             const state = JSON.parse(payload);
@@ -207,6 +209,7 @@ describe('setting variables', () => {
 
     });
     it('should publish a bool', function (done) {
+        this.timeout(20000);
         mqttSubscribe('var/status/testbool', payload => {
             console.log(payload);
             const state = JSON.parse(payload);
