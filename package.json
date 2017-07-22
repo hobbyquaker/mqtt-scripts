@@ -1,6 +1,6 @@
 {
   "name": "mqtt-scripts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Node.js based script runner for use in MQTT based Smart Home environments",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,7 @@
   "engines": {
     "node": ">= 6.0.0"
   },
+  "engineStrict": true,
   "preferGlobal": true,
   "devDependencies": {
     "camo-purge": "latest",
