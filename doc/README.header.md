@@ -9,11 +9,12 @@
 
 > mqtt-scripts is a Node.js based script runner for use in mqtt based smart home environments. 
 
-It's intentended to be used as the "logic layer" in your smart home, and offers a zero-boilerplate, straight forward scripting environment.
+It's intentended to be used as the "logic layer" in your smart home, and offers a zero-boilerplate, straight forward 
+scripting environment.
 
-It follows the [mqtt-smarthome](https://github.com/mqtt-smarthome/mqtt-smarthome) architecture. Mqtt-scripts is quite similar to [logic4mqtt](https://github.com/owagner/logic4mqtt) - but allows the usage of modules via the require command.
+It follows the [mqtt-smarthome](https://github.com/mqtt-smarthome/mqtt-smarthome) architecture. Mqtt-scripts could be 
+seen as something like "Node-RED without GUI"
 
-Mqtt-scripts could also be seen as something like "Node-RED without GUI"
 
 ### Getting started
 
@@ -72,6 +73,7 @@ Options:
 
 If you're running multiple instances of mqtt-scripts you have to decide which one should handle variables and disable 
 the variables on all other instances with the --disable-variable option.
+
 
 ### Script Examples
 
