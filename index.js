@@ -3,14 +3,14 @@
 /* eslint-disable func-name-matching */
 /* eslint-disable camelcase */
 
-var log = require('yalm');
-var config = require('./config.js');
-var pkg = require('./package.json');
+const log = require('yalm');
+const config = require('./config.js');
+const pkg = require('./package.json');
 
 log.setLevel(['debug', 'info', 'warn', 'error'].indexOf(config.verbosity) === -1 ? 'info' : config.verbosity);
 log.info(pkg.name + ' ' + pkg.version + ' starting');
 
-var modules = {
+const modules = {
     fs: require('fs'),
     path: require('path'),
     vm: require('vm'),
@@ -22,45 +22,44 @@ var modules = {
     suncalc: require('suncalc')
 };
 
-var domain = modules.domain;
-var vm = modules.vm;
-var fs = modules.fs;
-var path = modules.path;
-var watch = modules.watch;
-var scheduler = modules['node-schedule'];
-var suncalc = modules.suncalc;
+const domain = modules.domain;
+const vm = modules.vm;
+const fs = modules.fs;
+const path = modules.path;
+const watch = modules.watch;
+const scheduler = modules['node-schedule'];
+const suncalc = modules.suncalc;
 
-var status = {};
-var scripts = {};
-var subscriptions = [];
+const status = {};
+const scripts = {};
+const subscriptions = [];
 
-var _global = {};
+const _global = {};
 
 // Sun scheduling
 
-var sunEvents = [];
-var sunTimes = [{}, /* today */ {}, /* tomorrow */ {}];
+const sunEvents = [];
+let sunTimes = [{}, /* today */ {}, /* tomorrow */ {}];
 
 function calculateSunTimes() {
-    var now = new Date();
-    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0, 0);
-    var yesterday = new Date(today.getTime() - 86400000); // (24 * 60 * 60 * 1000));
-    var tomorrow = new Date(today.getTime() + 86400000); // (24 * 60 * 60 * 1000));
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0, 0, 0);
+    const yesterday = new Date(today.getTime() - 86400000); // (24 * 60 * 60 * 1000));
+    const tomorrow = new Date(today.getTime() + 86400000); // (24 * 60 * 60 * 1000));
     sunTimes = [
         suncalc.getTimes(yesterday, config.l, config.m),
         suncalc.getTimes(today, config.l, config.m),
         suncalc.getTimes(tomorrow, config.l, config.m)
     ];
-    // Log.debug('calculatedSunTimes', sunTimes);
 }
 
 calculateSunTimes();
 
-scheduler.scheduleJob('0 0 * * *', function () {
+scheduler.scheduleJob('0 0 * * *', () => {
     // Re-calculate every day
     calculateSunTimes();
     // Schedule events for this day
-    sunEvents.forEach(function (event) {
+    sunEvents.forEach(event => {
         sunScheduleEvent(event);
     });
     log.info('re-scheduled', sunEvents.length, 'sun events');
@@ -70,13 +69,10 @@ function sunScheduleEvent(obj, shift) {
     // Shift = -1 -> yesterday
     // shift = 0 -> today
     // shift = 1 -> tomorrow
-    var event = sunTimes[1 + (shift || 0)][obj.pattern];
-    // Log.debug('sunScheduleEvent', obj.pattern, obj.options, shift);
-    var now = new Date();
+    let event = sunTimes[1 + (shift || 0)][obj.pattern];
+    const now = new Date();
 
-    if (event.toString() === 'Invalid Date') {
-        // Log.debug(obj.pattern, 'doesn\'t occur today');
-    } else {
+    if (event.toString() !== 'Invalid Date') {
         // Event will occur today
 
         if (obj.options.shift) {
@@ -107,25 +103,20 @@ function sunScheduleEvent(obj, shift) {
             } else {
                 // Schedule the event!
                 scheduler.scheduleJob(event, obj.domain.bind(obj.callback));
-                // Log.debug('scheduled', obj.pattern, obj.options, event);
             }
-        } else {
-            // Log.debug(obj.pattern, obj.options, 'is more than 1s the past', now, event);
         }
     }
 }
 
 // MQTT
-
-var mqtt;
-mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/connected', payload: '0', retain: true}});
+const mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/connected', payload: '0', retain: true}});
 mqtt.publish(config.name + '/connected', '2', {retain: true});
 
-var firstConnect = true;
-var startTimeout;
-var connected;
+let firstConnect = true;
+let startTimeout;
+let connected;
 
-mqtt.on('connect', function () {
+mqtt.on('connect', () => {
     connected = true;
     log.info('mqtt connected ' + config.url);
     log.debug('mqtt subscribe #');
@@ -136,7 +127,7 @@ mqtt.on('connect', function () {
     }
 });
 
-mqtt.on('close', function () {
+mqtt.on('close', () => {
     if (connected) {
         firstConnect = false;
         connected = false;
@@ -144,11 +135,11 @@ mqtt.on('close', function () {
     }
 });
 
-mqtt.on('error', function () {
+mqtt.on('error', () => {
     log.error('mqtt error ' + config.url);
 });
 
-mqtt.on('message', function (topic, payload, msg) {
+mqtt.on('message', (topic, payload, msg) => {
     if (firstConnect && msg.retain) {
         // Retained message received - prolong the timeout
         clearTimeout(startTimeout);
@@ -156,11 +147,10 @@ mqtt.on('message', function (topic, payload, msg) {
     }
 
     payload = payload.toString();
-    // Log.debug('<', topic, payload)
 
-    var state;
+    let state;
 
-    var val = payload;
+    const val = payload;
 
     if (val === 'true') {
         // Payload was the string "true" - treat it as bool true
@@ -178,27 +168,26 @@ mqtt.on('message', function (topic, payload, msg) {
                 state = {val: state};
             }
         } catch (err) {
-            state = {val: val};
+            state = {val};
         }
     } else {
         // Payload seems to be type number
         state = {val: parseFloat(val)};
     }
 
-    var topicArr = topic.split('/');
-    var oldState;
+    const topicArr = topic.split('/');
+    let oldState;
 
     if (topicArr[0] === config.s && topicArr[1] === 'set' && !config.t) {
         topicArr[1] = 'status';
         topic = topicArr.join('/');
         oldState = status[topic] || {};
-        var ts = (new Date()).getTime();
+        const ts = (new Date()).getTime();
 
         state.ts = ts;
 
         state.lc = state.val === oldState.val ? oldState.lc : ts;
         status[topic] = state;
-        // Log.debug('>', topic, state)
         mqtt.publish(topic, JSON.stringify(state), {retain: true});
     } else {
         if (!state) {
@@ -218,10 +207,10 @@ mqtt.on('message', function (topic, payload, msg) {
 });
 
 function stateChange(topic, state, oldState, msg) {
-    subscriptions.forEach(function (subs) {
-        var options = subs.options || {};
-        var delay;
-        var match;
+    subscriptions.forEach(subs => {
+        const options = subs.options || {};
+        let delay;
+        let match;
 
         if (typeof subs.topic === 'string') {
             match = mqttWildcards(topic, subs.topic);
@@ -236,8 +225,6 @@ function stateChange(topic, state, oldState, msg) {
         }
 
         if (match && typeof subs.callback === 'function') {
-            // Log.debug('match', subs.topic, subs.options, typeof subs.callback);
-
             if (msg.retain && !options.retain) {
                 return;
             }
@@ -255,7 +242,7 @@ function stateChange(topic, state, oldState, msg) {
 
             delay = Math.floor(delay);
 
-            setTimeout(function () {
+            setTimeout(() => {
                 /**
                  * @callback subscribeCallback
                  * @param {string} topic - the topic that triggered this callback. +/status/# will be replaced by +//#
@@ -290,30 +277,30 @@ function createScript(source, name) {
 }
 
 function runScript(script, name) {
-    var scriptDir = path.dirname(path.resolve(name));
+    const scriptDir = path.dirname(path.resolve(name));
 
     log.debug(name, 'creating domain');
-    var scriptDomain = domain.create();
+    const scriptDomain = domain.create();
 
     log.debug(name, 'creating sandbox');
 
-    var Sandbox = {
+    const Sandbox = {
 
         global: _global,
 
-        setTimeout: setTimeout,
-        setInterval: setInterval,
-        clearTimeout: clearTimeout,
-        clearInterval: clearInterval,
+        setTimeout,
+        setInterval,
+        clearTimeout,
+        clearInterval,
 
-        Buffer: Buffer,
+        Buffer,
 
-        require: function (md) {
+        require(md) {
             if (modules[md]) {
                 return modules[md];
             }
             try {
-                var tmp;
+                let tmp;
                 if (md.match(/^\.\//) || md.match(/^\.\.\//)) {
                     tmp = './' + path.relative(__dirname, path.join(scriptDir, md));
                 } else {
@@ -327,9 +314,9 @@ function runScript(script, name) {
                 modules[md] = require(tmp);
                 return modules[md];
             } catch (err) {
-                var lines = err.stack.split('\n');
-                var stack = [];
-                for (var i = 6; i < lines.length; i++) {
+                const lines = err.stack.split('\n');
+                const stack = [];
+                for (let i = 6; i < lines.length; i++) {
                     if (lines[i].match(/runInContext/)) {
                         break;
                     }
@@ -350,8 +337,8 @@ function runScript(script, name) {
              * @method debug
              * @param {...*}
              */
-            debug: function () {
-                var args = Array.prototype.slice.call(arguments);
+            debug() {
+                const args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 log.debug.apply(log, args);
             },
@@ -361,8 +348,8 @@ function runScript(script, name) {
              * @method info
              * @param {...*}
              */
-            info: function () {
-                var args = Array.prototype.slice.call(arguments);
+            info() {
+                const args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 log.info.apply(log, args);
             },
@@ -372,8 +359,8 @@ function runScript(script, name) {
              * @method warn
              * @param {...*}
              */
-            warn: function () {
-                var args = Array.prototype.slice.call(arguments);
+            warn() {
+                const args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 log.warn.apply(log, args);
             },
@@ -383,8 +370,8 @@ function runScript(script, name) {
              * @method error
              * @param {...*}
              */
-            error: function () {
-                var args = Array.prototype.slice.call(arguments);
+            error() {
+                const args = Array.prototype.slice.call(arguments);
                 args.unshift(name + ':');
                 log.error.apply(log, args);
             }
@@ -444,12 +431,12 @@ function runScript(script, name) {
                     options.condition = scriptDomain.bind(options.condition);
                 }
 
-                subscriptions.push({topic: topic, options: options, callback: (typeof callback === 'function') && scriptDomain.bind(callback)});
+                subscriptions.push({topic, options, callback: (typeof callback === 'function') && scriptDomain.bind(callback)});
 
                 if (options.retain && status[topic] && typeof callback === 'function') {
                     callback(topic.replace(/^([^/]+)\/status\/(.+)/, '$1//$2'), status[topic].val, status[topic]);
                 } else if (options.retain && (/\/\+\//.test(topic) || /\+$/.test(topic) || /\+/.test(topic) || topic.endsWith('#')) && typeof callback === 'function') {
-                    for (var t in status) {
+                    for (const t in status) {
                         if (mqttWildcards(t, topic)) {
                             callback(t.replace(/^([^/]+)\/status\/(.+)/, '$1//$2'), status[t].val, status[t]);
                         }
@@ -457,7 +444,7 @@ function runScript(script, name) {
                 }
             } else if (typeof topic === 'object' && topic.length > 0) {
                 topic = Array.prototype.slice.call(topic);
-                topic.forEach(function (tp) {
+                topic.forEach(tp => {
                     Sandbox.subscribe(tp, options, callback);
                 });
             }
@@ -501,16 +488,14 @@ function runScript(script, name) {
 
             if (typeof pattern === 'object' && pattern.length > 0) {
                 pattern = Array.prototype.slice.call(pattern);
-                pattern.forEach(function (pt) {
+                pattern.forEach(pt => {
                     Sandbox.schedule(pt, options, callback);
                 });
                 return;
             }
 
-            // Log.debug('schedule()', pattern, options, typeof callback);
-
             if (options.random) {
-                scheduler.scheduleJob(pattern, function () {
+                scheduler.scheduleJob(pattern, () => {
                     setTimeout(scriptDomain.bind(callback), (parseFloat(options.random) || 0) * 1000 * Math.random());
                 });
             } else {
@@ -555,23 +540,21 @@ function runScript(script, name) {
 
             if (typeof pattern === 'object' && pattern.length > 0) {
                 pattern = Array.prototype.slice.call(pattern);
-                pattern.forEach(function (pt) {
+                pattern.forEach(pt => {
                     Sandbox.sunSchedule(pt, options, callback);
                 });
                 return;
             }
 
-            // Log.debug('sunSchedule', pattern, options);
-
-            var event = sunTimes[0][pattern];
+            const event = sunTimes[0][pattern];
             if (typeof event === 'undefined') {
                 throw new TypeError('unknown suncalc event ' + pattern);
             }
 
-            var obj = {
-                pattern: pattern,
-                options: options,
-                callback: callback,
+            const obj = {
+                pattern,
+                options,
+                callback,
                 context: Sandbox,
                 domain: scriptDomain
             };
@@ -592,7 +575,7 @@ function runScript(script, name) {
         publish: function Sandbox_publish(topic, payload, options) {
             if (typeof topic === 'object' && topic.length > 0) {
                 topic = Array.prototype.slice.call(topic);
-                topic.forEach(function (tp) {
+                topic.forEach(tp => {
                     Sandbox.publish(tp, payload, options);
                 });
                 return;
@@ -616,28 +599,28 @@ function runScript(script, name) {
         setValue: function Sandbox_setValue(topic, val, publishUnchanged) {
             if (typeof topic === 'object' && topic.length > 0) {
                 topic = Array.prototype.slice.call(topic);
-                topic.forEach(function (tp) {
+                topic.forEach(tp => {
                     Sandbox.setValue(tp, val);
                 });
                 return;
             }
 
-            var changed;
+            let changed;
 
             topic = topic.replace(/^\$/, config.s + '//');
 
-            var tmp = topic.split('/');
+            const tmp = topic.split('/');
             if (tmp[0] === config.s && !config.t) {
                 // Variable
 
                 tmp[1] = 'status';
                 topic = tmp.join('/');
-                var oldState = status[topic] || {};
-                var ts = (new Date()).getTime();
+                const oldState = status[topic] || {};
+                const ts = (new Date()).getTime();
                 if (typeof val === 'object') {
                     val.ts = ts;
                 } else {
-                    val = {val: val, ts: ts};
+                    val = {val, ts};
                 }
                 if (val.val !== oldState.val) {
                     val.lc = ts;
@@ -679,9 +662,8 @@ function runScript(script, name) {
          * @param {mixed} [value] - value to publish. If omitted the sources value is published.
          */
         link: function Sandbox_link(source, target, /* optional */ value) {
-            Sandbox.subscribe(source, function (topic, val) {
+            Sandbox.subscribe(source, (topic, val) => {
                 val = (typeof value === 'undefined') ? val : value;
-                // Log.debug('link', source, target, val);
                 Sandbox.setValue(target, val);
             });
         },
@@ -697,11 +679,11 @@ function runScript(script, name) {
         getProp: function Sandbox_getProp(topic /* , optional property, optional nested property, ... */) {
             topic = topic.replace(/^([^/]+)\/\/(.+)$/, '$1/status/$2');
             if (arguments.length > 1) {
-                var tmp = status[topic];
+                let tmp = status[topic];
                 if (typeof tmp === 'undefined') {
                     return;
                 }
-                for (var i = 1; i < arguments.length; i++) {
+                for (let i = 1; i < arguments.length; i++) {
                     if (typeof tmp[arguments[i]] === 'undefined') {
                         return;
                     }
@@ -722,7 +704,7 @@ function runScript(script, name) {
         /**
          *
          * @method age
-         * @param topic
+         * @param {string} topic
          * @returns {number} seconds since last change
          */
         age: function Sandbox_age(topic) {
@@ -737,16 +719,16 @@ function runScript(script, name) {
     };
 
     log.debug(name, 'contextifying sandbox');
-    var context = vm.createContext(Sandbox);
+    const context = vm.createContext(Sandbox);
 
-    scriptDomain.on('error', function (e) {
+    scriptDomain.on('error', e => {
         if (!e.stack) {
             log.error([name + ' unkown exception']);
             return;
         }
-        var lines = e.stack.split('\n');
-        var stack = [];
-        for (var i = 0; i < lines.length; i++) {
+        const lines = e.stack.split('\n');
+        const stack = [];
+        for (let i = 0; i < lines.length; i++) {
             if (lines[i].match(/\[as runInContext\]/)) {
                 break;
             }
@@ -756,7 +738,7 @@ function runScript(script, name) {
         log.error([name + ' ' + stack.join('\n')]);
     });
 
-    scriptDomain.run(function () {
+    scriptDomain.run(() => {
         log.debug(name, 'running');
         script.runInContext(context);
     });
@@ -769,7 +751,7 @@ function loadScript(file) {
     }
 
     log.info(file, 'loading');
-    fs.readFile(file, function (err, src) {
+    fs.readFile(file, (err, src) => {
         if (err && err.code === 'ENOENT') {
             log.error(file, 'not found');
         } else if (err) {
@@ -784,7 +766,7 @@ function loadScript(file) {
                 }
 
                 log.debug(file, 'transpiling');
-                modules['coffee-compiler'].fromSource(src.toString(), {sourceMap: false, bare: true}, function (err, js) {
+                modules['coffee-compiler'].fromSource(src.toString(), {sourceMap: false, bare: true}, (err, js) => {
                     if (err) {
                         log.error(file, 'transpile failed', err.message);
                         return;
@@ -803,7 +785,7 @@ function loadScript(file) {
 }
 
 function loadDir(dir) {
-    fs.readdir(dir, function (err, data) {
+    fs.readdir(dir, (err, data) => {
         if (err) {
             if (err.errno === 34) {
                 log.error('directory ' + path.resolve(dir) + ' not found');
@@ -811,7 +793,7 @@ function loadDir(dir) {
                 log.error('readdir', dir, err);
             }
         } else {
-            data.sort().forEach(function (file) {
+            data.sort().forEach(file => {
                 if (file.match(/\.(js|coffee)$/)) {
                     loadScript(path.join(dir, file));
                 }
@@ -819,10 +801,10 @@ function loadDir(dir) {
 
             if (!config['disable-watch']) {
                 watch.watchTree(dir, {
-                    filter: function (path) {
+                    filter(path) {
                         return path.match(/\.(js|coffee)$/);
                     }
-                }, function (f, curr, prev) {
+                }, (f, curr, prev) => {
                     if (typeof f === 'object' && prev === null && curr === null) {
                         log.debug('watch', dir, 'initialized');
                     } else {
@@ -841,7 +823,7 @@ function start() {
         if (typeof config.file === 'string') {
             loadScript(config.file);
         } else {
-            config.file.forEach(function (file) {
+            config.file.forEach(file => {
                 loadScript(file);
             });
         }
@@ -851,18 +833,18 @@ function start() {
         if (typeof config.dir === 'string') {
             loadDir(config.dir);
         } else {
-            config.dir.forEach(function (dir) {
+            config.dir.forEach(dir => {
                 loadDir(dir);
             });
         }
     }
 }
 
-process.on('SIGINT', function () {
+process.on('SIGINT', () => {
     log.info('got SIGINT. exiting.');
     process.exit(0);
 });
-process.on('SIGTERM', function () {
+process.on('SIGTERM', () => {
     log.info('got SIGTERM. exiting.');
     process.exit(0);
 });
