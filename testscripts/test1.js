@@ -20,4 +20,3 @@ schedule('* * * * *', () => {
 });
 
 log.info(require('./lib/libtest.js'));
-

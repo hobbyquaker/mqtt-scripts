@@ -3,6 +3,7 @@
 require('should');
 
 const cp = require('child_process');
+const fs = require('fs');
 const request = require('request');
 const path = require('path');
 const streamSplitter = require('stream-splitter');
@@ -290,27 +291,25 @@ describe('schedule()', () => {
 });
 
 describe('setting variables', () => {
-    setTimeout(function () {
-
-    }, 1000);
-     it('should publish a number', function (done) {
-         this.timeout(20000);
-         mqttSubscribe('var/status/testnumber', payload => {
-             const state = JSON.parse(payload);
-             if (state.val === 1) {
-                 done();
-             }
-         });
-         setTimeout(function () {
-             mqtt.publish('var/set/testnumber', '1');
-         }, 1000);
-
-     });
+    it('should publish a number', function (done) {
+        this.timeout(20000);
+        mqttSubscribe('var/status/testnumber', payload => {
+            const state = JSON.parse(payload);
+            if (state.val === 1) {
+                mqtt.unsubscribe('var/status/testnumber');
+                done();
+            }
+        });
+        setTimeout(function () {
+            mqtt.publish('var/set/testnumber', '1');
+        }, 1000);
+    });
     it('should publish a string', function (done) {
         this.timeout(20000);
         mqttSubscribe('var/status/teststring', payload => {
             const state = JSON.parse(payload);
             if (state.val === 'test') {
+                mqtt.unsubscribe('var/status/teststring');
                 done();
             }
         });
@@ -324,12 +323,25 @@ describe('setting variables', () => {
         mqttSubscribe('var/status/testbool', payload => {
             const state = JSON.parse(payload);
             if (state.val === true) {
+                mqtt.unsubscribe('var/status/testbool');
                 done();
             }
         });
         setTimeout(function () {
             mqtt.publish('var/set/testbool', 'true');
         }, 3000);
+    });
+});
+
+describe('script file changes', () => {
+    it('should quit when a script file changes', function (done) {
+        this.timeout(10000);
+        subscribe('ms', /change detected\. exiting/, () => {
+            done();
+        });
+        setTimeout(function () {
+            fs.appendFileSync(__dirname + '/testscripts/test1.js', '\nlog.info(\'appended!\');\n');
+        }, 1000);
     });
 });
 
