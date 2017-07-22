@@ -22,6 +22,15 @@ schedule('* * * * *', () => {
     }, 2000);
 });
 
+subscribe('test/condition', 'val=="muh"', (topic, val) => {
+    log.info(topic, val)
+});
+
+subscribe('test/change', {change: true}, (topic, val) => {
+    log.info(topic, val)
+});
+
+
 log.info(require('./lib/libtest.js'));
 
 sunSchedule('sunrise', () => {

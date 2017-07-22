@@ -175,6 +175,12 @@ describe('script loading', () => {
             done();
         });
     });
+    it('should catch a syntax error', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test3\.js SyntaxError/, data => {
+            done();
+        });
+    })
 });
 
 describe('testscripts/test1.js execution', () => {
@@ -234,6 +240,28 @@ describe('subscribe(), setValue()', () => {
             }
         });
         mqtt.publish('test/status/incr', '4');
+    });
+});
+
+describe('subscribe()', function () {
+    it('should respect condition val==\'muh\'', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /test1\.js: test\/condition (.*)$/, (line, m) => {
+            done(m[1] === 'muh' ? undefined : new Error());
+        });
+        mqtt.publish('test/condition', 'blub');
+        mqtt.publish('test/condition', 'muh');
+    });
+    it('should respect change==true', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /test1\.js: test\/change (.*)$/, (line, m) => {
+            done();
+        });
+        setTimeout(() => {
+            mqtt.publish('test/change', '0');
+            mqtt.publish('test/change', '0');
+            mqtt.publish('test/change', '0');
+        }, 1000);
     });
 });
 
