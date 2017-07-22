@@ -18,7 +18,7 @@ seen as something like "Node-RED without GUI"
 
 ### Getting started
 
-Prerequisites: mqtt-scripts needs Node.js >= 0.10 or io.js including npm.
+Prerequisites: mqtt-scripts needs Node.js >= 6.0.
 
 * Install mqtt-scripts globally:
 
