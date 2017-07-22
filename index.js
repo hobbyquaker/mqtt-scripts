@@ -264,12 +264,7 @@ function mqttWildcards(topic, subscription) {
 function createScript(source, name) {
     log.debug(name, 'compiling');
     try {
-        if (!process.versions.node.match(/^0\.10\./)) {
-            // Node.js >= 0.12, io.js
-            return new vm.Script(source, {filename: name});
-        }
-            // Node.js 0.10.x
-        return vm.createScript(source, name);
+        return new vm.Script(source, {filename: name});
     } catch (err) {
         log.error(name, err.name + ':', err.message);
         return false;
