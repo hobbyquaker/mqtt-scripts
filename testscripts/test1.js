@@ -19,4 +19,5 @@ schedule('* * * * *', () => {
     log.info('schedule callback');
 });
 
+log.info(require('./lib/libtest.js'));
 

@@ -215,6 +215,15 @@ describe('testscripts/test2.coffee execution', () => {
 });
 
 
+describe('require()', () => {
+    it('should load a lib file', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /require test/, () => {
+            done();
+        });
+    });
+});
+
 describe('subscribe(), setValue()', () => {
     it('should increase a number', function (done) {
         this.timeout(20000);
