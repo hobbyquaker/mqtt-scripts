@@ -180,17 +180,40 @@ describe('script loading', () => {
         subscribe('ms', /testscripts\/test3\.js SyntaxError/, data => {
             done();
         });
-    })
+    });
+    it('should catch wrong arguments for subscribe()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test4\.js TypeError: callback is not a function/, data => {
+            done();
+        });
+    });
+    it('should catch wrong arguments for subscribe()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test5\.js TypeError: callback is not a function/, data => {
+            done();
+        });
+    });
+    it('should catch wrong arguments for subscribe()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test6\.js Error: wrong number of arguments/, data => {
+            done();
+        });
+    });
 });
 
 describe('testscripts/test1.js execution', () => {
     it('should log a msg', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test1\.js: test log/, data => {
+        subscribe('ms', /testscripts\/test1\.js: test log/, () => {
             done();
         });
     });
-
+    it('should return true on getValue()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test1\.js: test1 true/, () => {
+            done();
+        });
+    });
 
 });
 
@@ -263,6 +286,7 @@ describe('subscribe()', function () {
             mqtt.publish('test/change', '0');
         }, 1000);
     });
+
 });
 
 describe('link()', () => {
@@ -394,6 +418,7 @@ describe('setting variables', () => {
             mqtt.publish('var/set/array', '[1,2,3]');
         }, 5000);
     });
+
 });
 
 describe('script file changes', () => {

@@ -30,9 +30,20 @@ subscribe('test/change', {change: true}, (topic, val) => {
     log.info(topic, val)
 });
 
+subscribe(/regexp/, (topic, val) => {
+    log.info(topic, val);
+});
+
+
 
 log.info(require('./lib/libtest.js'));
 
 sunSchedule('sunrise', () => {
     log.info('sunrise');
 });
+
+subscribe('test1', (topic, val) => {
+    log.info(topic, getValue('test1'));
+});
+
+publish(['test1', 'test2'], {val: true});
