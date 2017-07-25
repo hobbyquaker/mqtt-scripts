@@ -300,7 +300,7 @@ function runScript(script, name) {
                     tmp = md;
                     if (fs.existsSync(path.join(scriptDir, 'node_modules', md, 'package.json'))) {
                         tmp = './' + path.relative(__dirname, path.join(scriptDir, 'node_modules', md));
-                        tmp = path.resolve(tmp);
+                        // Tmp = path.resolve(tmp);
                     }
                 }
                 Sandbox.log.debug('require', tmp);
