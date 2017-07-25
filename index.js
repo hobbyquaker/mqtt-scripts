@@ -7,6 +7,7 @@ const log = require('yalm');
 const config = require('./config.js');
 const pkg = require('./package.json');
 
+/* istanbul ignore next */
 log.setLevel(['debug', 'info', 'warn', 'error'].indexOf(config.verbosity) === -1 ? 'info' : config.verbosity);
 log.info(pkg.name + ' ' + pkg.version + ' starting');
 
@@ -135,6 +136,7 @@ mqtt.on('close', () => {
     }
 });
 
+/* istanbul ignore next */
 mqtt.on('error', () => {
     log.error('mqtt error ' + config.url);
 });
@@ -190,6 +192,7 @@ mqtt.on('message', (topic, payload, msg) => {
         status[topic] = state;
         mqtt.publish(topic, JSON.stringify(state), {retain: true});
     } else {
+        /* istanbul ignore next */
         if (!state) {
             log.error('invalid state', topic, payload);
             process.exit();
@@ -210,13 +213,8 @@ function stateChange(topic, state, oldState, msg) {
     subscriptions.forEach(subs => {
         const options = subs.options || {};
         let delay;
-        let match;
 
-        if (typeof subs.topic === 'string') {
-            match = mqttWildcards(topic, subs.topic);
-        } else if (subs.topic instanceof RegExp) {
-            match = subs.topic.test(topic);
-        }
+        const match = mqttWildcards(topic, subs.topic);
 
         if (match && typeof options.condition === 'function') {
             if (!options.condition(topic.replace(/^([^/]+)\/status\/(.+)/, '$1//$2'), state.val, state, oldState, msg)) {
@@ -311,13 +309,12 @@ function runScript(script, name) {
             } catch (err) {
                 const lines = err.stack.split('\n');
                 const stack = [];
-                for (let i = 6; i < lines.length; i++) {
-                    if (lines[i].match(/runInContext/)) {
-                        break;
+                lines.forEach(line => {
+                    if (!line.match(/module\.js:/) && !line.match(/index\.js:307/)) {
+                        stack.push(line);
                     }
-                    stack.push(lines[i]);
-                }
-                log.error(name + ': ' + err.message + '\n' + stack);
+                });
+                log.error(name + ': ' + stack);
             }
         },
 
@@ -632,7 +629,7 @@ function runScript(script, name) {
                 if (!status[topic] || (status[topic].val !== val)) {
                     tmp[1] = 'set';
                     topic = tmp.join('/');
-                    Sandbox.publish(topic, val, {retain: false});
+                    Sandbox.publish(topic, val, {retain: false}); // TODO really retain false?!
                 }
             } else {
                 topic = topic.replace(/^([^/]+)\/\/(.+)$/, '$1/set/$2');
@@ -717,6 +714,7 @@ function runScript(script, name) {
     const context = vm.createContext(Sandbox);
 
     scriptDomain.on('error', e => {
+        /* istanbul ignore if */
         if (!e.stack) {
             log.error([name + ' unkown exception']);
             return;
@@ -724,7 +722,7 @@ function runScript(script, name) {
         const lines = e.stack.split('\n');
         const stack = [];
         for (let i = 0; i < lines.length; i++) {
-            if (lines[i].match(/\[as runInContext\]/)) {
+            if (lines[i].match(/at ContextifyScript.Script.runInContext/)) {
                 break;
             }
             stack.push(lines[i]);
@@ -740,6 +738,7 @@ function runScript(script, name) {
 }
 
 function loadScript(file) {
+    /* istanbul ignore if */
     if (scripts[file]) {
         log.error(file, 'already loaded?!');
         return;
@@ -747,14 +746,14 @@ function loadScript(file) {
 
     log.info(file, 'loading');
     fs.readFile(file, (err, src) => {
+        /* istanbul ignore if */
         if (err && err.code === 'ENOENT') {
             log.error(file, 'not found');
         } else if (err) {
+            /* istanbul ignore next */
             log.error(file, err);
         } else {
             if (file.match(/\.coffee$/)) {
-                // CoffeeScript
-
                 if (!modules['coffee-compiler']) {
                     log.info('loading coffee-compiler');
                     modules['coffee-compiler'] = require('coffee-compiler');
@@ -762,6 +761,7 @@ function loadScript(file) {
 
                 log.debug(file, 'transpiling');
                 modules['coffee-compiler'].fromSource(src.toString(), {sourceMap: false, bare: true}, (err, js) => {
+                    /* istanbul ignore if */
                     if (err) {
                         log.error(file, 'transpile failed', err.message);
                         return;
@@ -781,6 +781,7 @@ function loadScript(file) {
 
 function loadDir(dir) {
     fs.readdir(dir, (err, data) => {
+        /* istanbul ignore if */
         if (err) {
             if (err.errno === 34) {
                 log.error('directory ' + path.resolve(dir) + ' not found');
@@ -814,6 +815,7 @@ function loadDir(dir) {
 }
 
 function start() {
+    /* istanbul ignore if */
     if (config.file) {
         if (typeof config.file === 'string') {
             loadScript(config.file);
@@ -825,6 +827,7 @@ function start() {
     }
 
     if (config.dir) {
+        /* istanbul ignore else */
         if (typeof config.dir === 'string') {
             loadDir(config.dir);
         } else {
@@ -835,10 +838,12 @@ function start() {
     }
 }
 
+/* istanbul ignore next */
 process.on('SIGINT', () => {
     log.info('got SIGINT. exiting.');
     process.exit(0);
 });
+/* istanbul ignore next */
 process.on('SIGTERM', () => {
     log.info('got SIGTERM. exiting.');
     process.exit(0);
