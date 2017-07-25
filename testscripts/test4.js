@@ -1,1 +1,2 @@
-subscribe('test', 'muh');
+subscribe('muh', 'kuh');
+

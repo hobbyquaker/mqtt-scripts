@@ -1,0 +1,2 @@
+sunSchedule('sunrise', 'mih');
+

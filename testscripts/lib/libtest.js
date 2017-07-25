@@ -1,1 +1,1 @@
-module.exports = 'require test!';
+module.exports = 'require test';

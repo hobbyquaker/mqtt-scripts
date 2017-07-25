@@ -1,3 +1,2 @@
-
-subscribe('test', {}, 'muh');
+subscribe('muh', {}, 'kih');
 
