@@ -12,7 +12,7 @@ let mqtt = Mqtt.connect('mqtt://127.0.0.1');
 
 
 
-const msCmd = path.join(__dirname, '/index.js');
+const msCmd = path.join(__dirname, '/mockdate.js');
 const msArgs = ['-d', __dirname + '/testscripts', '-v', 'debug'];
 let ms;
 let msPipeOut;
@@ -75,7 +75,6 @@ function mqttSubscribe(topic, callback) {
 mqtt.on('message', (topic, payload) => {
     if (mqttSubscriptions[topic]) {
         mqttSubscriptions[topic].forEach((callback, index) => {
-            //console.log('cb', index, topic, payload.toString());
             callback(payload.toString());
         });
     }
@@ -86,11 +85,11 @@ function startMs() {
     msPipeOut = ms.stdout.pipe(streamSplitter('\n'));
     msPipeErr = ms.stderr.pipe(streamSplitter('\n'));
     msPipeOut.on('token', data => {
-        console.log('ms', data.toString());
+        //console.log('ms', data.toString());
         matchSubscriptions('ms', data.toString());
     });
     msPipeErr.on('token', data => {
-        console.log('ms', data.toString());
+        //console.log('ms', data.toString());
         matchSubscriptions('ms', data.toString());
     });
 }
@@ -137,7 +136,8 @@ describe('start daemon', () => {
     it('should publish 2 on logic/connected', function (done) {
         this.timeout(20000);
         mqttSubscribe('logic/connected', payload => {
-            if (payload === '2') {
+            if (payload > 0) {
+                mqtt.unsubscribe('logic/connected');
                 done();
             }
         });
@@ -181,21 +181,67 @@ describe('script loading', () => {
             done();
         });
     });
-    it('should catch wrong arguments for subscribe()', function (done) {
+    
+});
+
+describe('argument checks', () => {
+    it('should throw on wrong arguments for subscribe()', function (done) {
         this.timeout(20000);
         subscribe('ms', /testscripts\/test4\.js TypeError: callback is not a function/, data => {
             done();
         });
     });
-    it('should catch wrong arguments for subscribe()', function (done) {
+    it('should throw on wrong arguments for subscribe()', function (done) {
         this.timeout(20000);
         subscribe('ms', /testscripts\/test5\.js TypeError: callback is not a function/, data => {
             done();
         });
     });
-    it('should catch wrong arguments for subscribe()', function (done) {
+    it('should throw on wrong arguments for subscribe()', function (done) {
         this.timeout(20000);
         subscribe('ms', /testscripts\/test6\.js Error: wrong number of arguments/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for sunSchedule()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test8\.js TypeError: unknown suncalc event/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for sunSchedule()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test9\.js Error: wrong number of arguments/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for sunSchedule()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test10\.js TypeError: callback is not a function/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for sunSchedule()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test11\.js TypeError: callback is not a function/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for schedule()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test12\.js TypeError: callback is not a function/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for schedule()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test13\.js TypeError: callback is not a function/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for schedule()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test14\.js Error: wrong number of arguments/, data => {
             done();
         });
     });
@@ -252,6 +298,18 @@ describe('require()', () => {
             done();
         });
     });
+    it('should load a module', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /Dummy Module/, () => {
+            done();
+        });
+    });
+    it('should throw on invalid module', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /ReferenceError: thisDoesNotExist is not defined/, () => {
+            done();
+        });
+    });
 });
 
 describe('subscribe(), setValue()', () => {
@@ -277,16 +335,35 @@ describe('subscribe()', function () {
     });
     it('should respect change==true', function (done) {
         this.timeout(20000);
-        subscribe('ms', /test1\.js: test\/change (.*)$/, (line, m) => {
-            done();
+        let count = 0;
+        subscribe('ms', /test1\.js: test\/change 0/, (line, m) => {
+            count += 1;
+        });
+        subscribe('ms', /test1\.js: test\/change 1/, (line, m) => {
+            count += 1;
+            if (count >= 2) {
+                done();
+            }
         });
         setTimeout(() => {
             mqtt.publish('test/change', '0');
             mqtt.publish('test/change', '0');
             mqtt.publish('test/change', '0');
+            mqtt.publish('test/change', '1');
+            mqtt.publish('test/change', '1');
         }, 1000);
     });
-
+    it('should do randomshift', function (done) {
+        this.timeout(21000);
+        let early = true;
+        setTimeout(function () {
+            early = undefined;
+        }, 9000);
+        subscribe('ms', /randomshift muh/, () => {
+            done(early);
+        });
+        mqtt.publish('test/randomshift', 'muh');
+    })
 });
 
 describe('link()', () => {
@@ -307,6 +384,15 @@ describe('link()', () => {
             }
         });
         mqtt.publish('test/src1', 'test');
+    });
+    it('should link one topic to another with given value', function (done) {
+        this.timeout(20000);
+        mqttSubscribe('test/target3', payload => {
+            if (payload === '1337') {
+                done();
+            }
+        });
+        mqtt.publish('test/src3', 'test');
     });
 });
 
@@ -334,10 +420,40 @@ describe('getProp(), now()', () => {
 });
 
 describe('schedule()', () => {
-    it('should excute a schedule callback', function (done) {
+    it('should execute a schedule callback for \'* * * * *\'', function (done) {
         this.timeout(180000);
         subscribe('ms', /schedule callback/, () => {
             done();
+        });
+    });
+    it('should execute a schedule callback for \'0 0 * * *\'', function (done) {
+        this.timeout(180000);
+        subscribe('ms', /midnight/, () => {
+            done();
+        });
+    });
+    it('should re-schedule sun events', function (done) {
+        subscribe('ms', /re\-scheduled [0-9]+ sun events/, () => {
+            done();
+        });
+    });
+    it('should execute a schedule callback for Date', function (done) {
+        this.timeout(180000);
+        subscribe('ms', /schedule date/, () => {
+            done();
+        });
+    });
+    it('should execute a schedule callback for multi schedule', function (done) {
+        this.timeout(180000);
+        let count = 0;
+        subscribe('ms', /multi schedule 1/, () => {
+            count += 1;    
+        });
+        subscribe('ms', /multi schedule 2/, () => {
+            count += 1;
+            if (count >= 2) {
+                done();
+            }
         });
     });
 });
@@ -420,6 +536,35 @@ describe('setting variables', () => {
     });
 
 });
+
+
+describe('mqtt connection', () => {
+    it('should log mqtt disconnect', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /mqtt closed/, function () {
+            done();
+        })
+        if (process.platform === 'darwin') {
+            cp.exec('brew services stop mosquitto')
+        } else {
+            cp.exec('sudo service mosquitto stop');
+        }
+
+    });
+     it('should reconnect mqtt', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /mqtt connected/, function () {
+            done();
+        });
+        if (process.platform === 'darwin') {
+            cp.exec('brew services start mosquitto')
+        } else {
+            cp.exec('sudo service mosquitto start');
+        }
+        
+    });
+});
+
 
 describe('script file changes', () => {
     it('should quit when a script file changes', function (done) {
