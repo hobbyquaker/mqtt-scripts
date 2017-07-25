@@ -78,6 +78,8 @@ subscribe('test1', (topic, val) => {
 
 publish(['test1', 'test2'], {val: true});
 
-log.info('appended!');
 
-log.info('appended!');
+setValue('$testvar1', true);
+setValue('$testvar1', true);
+setValue('var/set/testvar2', true);
+setValue('var/set/testvar2', {val:true});

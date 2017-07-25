@@ -8,9 +8,12 @@ const request = require('request');
 const path = require('path');
 const streamSplitter = require('stream-splitter');
 const Mqtt = require('mqtt');
+
+if (process.platform === 'darwin') {
+    cp.exec('brew services start mosquitto')
+}
+
 let mqtt = Mqtt.connect('mqtt://127.0.0.1');
-
-
 
 const msCmd = path.join(__dirname, '/mockdate.js');
 const msArgs = ['-d', __dirname + '/testscripts', '-v', 'debug'];
@@ -199,7 +202,19 @@ describe('argument checks', () => {
     });
     it('should throw on wrong arguments for subscribe()', function (done) {
         this.timeout(20000);
+        subscribe('ms', /testscripts\/test16\.js TypeError: argument topic missing/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for subscribe()', function (done) {
+        this.timeout(20000);
         subscribe('ms', /testscripts\/test6\.js Error: wrong number of arguments/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for subscribe()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test17\.js Error: options.condition/, data => {
             done();
         });
     });
@@ -224,6 +239,12 @@ describe('argument checks', () => {
     it('should throw on wrong arguments for sunSchedule()', function (done) {
         this.timeout(20000);
         subscribe('ms', /testscripts\/test11\.js TypeError: callback is not a function/, data => {
+            done();
+        });
+    });
+    it('should throw on wrong arguments for sunSchedule()', function (done) {
+        this.timeout(20000);
+        subscribe('ms', /testscripts\/test15\.js Error: options.shift out of range/, data => {
             done();
         });
     });

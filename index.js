@@ -623,10 +623,14 @@ function runScript(script, name) {
                 if (changed || publishUnchanged) {
                     Sandbox.publish(topic, val, {retain: true});
                 }
+            /* istanbul ignore next */ // TODO tests!
             } else if (tmp[0] === config.s && config.t) {
+                /* istanbul ignore next */
                 tmp[1] = 'status';
                 topic = tmp.join('/');
+                /* istanbul ignore next */
                 if (!status[topic] || (status[topic].val !== val)) {
+                    /* istanbul ignore next */
                     tmp[1] = 'set';
                     topic = tmp.join('/');
                     Sandbox.publish(topic, val, {retain: false}); // TODO really retain false?!
