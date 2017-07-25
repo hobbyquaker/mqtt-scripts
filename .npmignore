@@ -8,3 +8,4 @@ Gulpfile.js
 .travis.yml
 coverage
 .nyc_output
+mockdate.js
