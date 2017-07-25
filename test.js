@@ -85,11 +85,11 @@ function startMs() {
     msPipeOut = ms.stdout.pipe(streamSplitter('\n'));
     msPipeErr = ms.stderr.pipe(streamSplitter('\n'));
     msPipeOut.on('token', data => {
-        //console.log('ms', data.toString());
+        console.log('ms', data.toString());
         matchSubscriptions('ms', data.toString());
     });
     msPipeErr.on('token', data => {
-        //console.log('ms', data.toString());
+        console.log('ms', data.toString());
         matchSubscriptions('ms', data.toString());
     });
 }
