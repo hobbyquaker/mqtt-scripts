@@ -33,6 +33,7 @@
     "nyc": "latest",
     "should": "latest",
     "stream-splitter": "latest",
+    "timekeeper": "^1.0.0",
     "xo": "latest"
   },
   "directories": {
@@ -66,7 +67,14 @@
     "ignores": [
       "testscripts/**",
       "test.js",
-      "Gulpfile.js"
+      "Gulpfile.js",
+      "mockdate.js"
+    ]
+  },
+  "nyc": {
+    "include": [
+      "index.js",
+      "config.js"
     ]
   }
 }
