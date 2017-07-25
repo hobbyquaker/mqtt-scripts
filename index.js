@@ -289,6 +289,8 @@ function runScript(script, name) {
         Buffer,
 
         require(md) {
+            Sandbox.log.debug('require...', md, __dirname, scriptDir);
+
             if (modules[md]) {
                 return modules[md];
             }
@@ -299,7 +301,6 @@ function runScript(script, name) {
                 } else {
                     tmp = md;
                     if (fs.existsSync(path.join(scriptDir, 'node_modules', md, 'package.json'))) {
-                        Sandbox.log.debug('require...', md, __dirname, scriptDir);
                         tmp = './' + path.relative(__dirname, path.join(scriptDir, 'node_modules', md));
                         // Tmp = path.resolve(tmp);
                     }
