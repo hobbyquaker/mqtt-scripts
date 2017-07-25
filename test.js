@@ -293,19 +293,19 @@ describe('testscripts/test2.coffee execution', () => {
 
 describe('require()', () => {
     it('should load a lib file', function (done) {
-        this.timeout(20000);
+        this.timeout(60000);
         subscribe('ms', /require test/, () => {
             done();
         });
     });
     it('should load a module', function (done) {
-        this.timeout(20000);
+        this.timeout(60000);
         subscribe('ms', /Dummy Module/, () => {
             done();
         });
     });
     it('should throw on invalid module', function (done) {
-        this.timeout(20000);
+        this.timeout(60000);
         subscribe('ms', /ReferenceError: thisDoesNotExist is not defined/, () => {
             done();
         });
