@@ -7,7 +7,7 @@
     "test": "camo-purge ; xo && nyc mocha test.js && nyc report --reporter=text-lcov | coveralls --force",
     "testonly": "xo && nyc mocha test.js"
   },
-  "author": "Sebastian 'hobbyquaker' Raff <hq@ccu.io>",
+  "author": "Sebastian 'hobbyquaker' Raff <hobbyquaker@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "coffee-compiler": "^0.3.2",
