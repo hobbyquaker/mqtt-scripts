@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "camo-purge ; xo && nyc mocha test.js --exit && nyc report --reporter=text-lcov | coveralls --force",
-    "testonly": "nyc mocha test.js --exit",
+    "testonly": "mocha test.js --exit",
     "lintfix": "xo --fix"
   },
   "author": "Sebastian 'hobbyquaker' Raff <hobbyquaker@gmail.com>",
