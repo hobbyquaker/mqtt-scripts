@@ -4,8 +4,9 @@
   "description": "Node.js based script runner for use in MQTT based Smart Home environments",
   "main": "index.js",
   "scripts": {
-    "test": "camo-purge ; xo && nyc mocha test.js && nyc report --reporter=text-lcov | coveralls --force",
-    "testonly": "xo && nyc mocha test.js"
+    "test": "camo-purge ; xo && nyc mocha test.js --exit && nyc report --reporter=text-lcov | coveralls --force",
+    "testonly": "nyc mocha test.js --exit",
+    "lintfix": "xo --fix"
   },
   "author": "Sebastian 'hobbyquaker' Raff <hobbyquaker@gmail.com>",
   "license": "MIT",
@@ -17,7 +18,7 @@
     "suncalc": "^1.8.0",
     "watch": "^1.0.2",
     "yalm": "^4.0.2",
-    "yargs": "^8.0.2"
+    "yargs": "^11.0.0"
   },
   "engines": {
     "node": ">= 6.0.0"
@@ -33,7 +34,7 @@
     "nyc": "latest",
     "should": "latest",
     "stream-splitter": "latest",
-    "timekeeper": "^1.0.0",
+    "timekeeper": "latest",
     "xo": "latest"
   },
   "directories": {
