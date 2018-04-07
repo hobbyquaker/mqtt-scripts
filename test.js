@@ -190,79 +190,79 @@ describe('script loading', () => {
 describe('argument checks', () => {
     it('should throw on wrong arguments for subscribe()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test4\.js TypeError: callback is not a function/, data => {
+        subscribe('ms', /testscripts\/test4\.js.*TypeError: callback is not a function/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for subscribe()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test5\.js TypeError: callback is not a function/, data => {
+        subscribe('ms', /testscripts\/test5\.js.*TypeError: callback is not a function/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for subscribe()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test16\.js TypeError: argument topic missing/, data => {
+        subscribe('ms', /testscripts\/test16\.js.*TypeError: argument topic missing/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for subscribe()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test6\.js Error: wrong number of arguments/, data => {
+        subscribe('ms', /testscripts\/test6\.js.*Error: wrong number of arguments/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for subscribe()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test17\.js Error: options.condition/, data => {
+        subscribe('ms', /testscripts\/test17\.js.*Error: options.condition/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for sunSchedule()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test8\.js TypeError: unknown suncalc event/, data => {
+        subscribe('ms', /testscripts\/test8\.js.*TypeError: unknown suncalc event/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for sunSchedule()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test9\.js Error: wrong number of arguments/, data => {
+        subscribe('ms', /testscripts\/test9\.js.*Error: wrong number of arguments/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for sunSchedule()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test10\.js TypeError: callback is not a function/, data => {
+        subscribe('ms', /testscripts\/test10\.js.*TypeError: callback is not a function/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for sunSchedule()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test11\.js TypeError: callback is not a function/, data => {
+        subscribe('ms', /testscripts\/test11\.js.*TypeError: callback is not a function/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for sunSchedule()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test15\.js Error: options.shift out of range/, data => {
+        subscribe('ms', /testscripts\/test15\.js.*Error: options.shift out of range/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for schedule()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test12\.js TypeError: callback is not a function/, data => {
+        subscribe('ms', /testscripts\/test12\.js.*TypeError: callback is not a function/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for schedule()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test13\.js TypeError: callback is not a function/, data => {
+        subscribe('ms', /testscripts\/test13\.js.*TypeError: callback is not a function/, data => {
             done();
         });
     });
     it('should throw on wrong arguments for schedule()', function (done) {
         this.timeout(20000);
-        subscribe('ms', /testscripts\/test14\.js Error: wrong number of arguments/, data => {
+        subscribe('ms', /testscripts\/test14\.js.*Error: wrong number of arguments/, data => {
             done();
         });
     });
