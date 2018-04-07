@@ -3,6 +3,11 @@
 /* eslint-disable func-name-matching */
 /* eslint-disable camelcase */
 
+/* eslint prefer-rest-params: "warn" */
+/* eslint prefer-destructuring: "warn" */
+
+/* eslint node/no-deprecated-api: "warn" */
+
 const log = require('yalm');
 const config = require('./config.js');
 const pkg = require('./package.json');
