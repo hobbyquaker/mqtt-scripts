@@ -35,21 +35,42 @@ module.exports = function (Sandbox) {
     /**
      * Combine topics through boolean or
      * @method combineBool
-     * @param {string} targets - topic to publish
      * @param {string[]} srcs - array of topics to subscribe
+     * @param {string} targets - topic to publish
      */
-    Sandbox.combineBool = function Sandbox_combineBool(target, srcs) {
-        Sandbox.subscribe(srcs, {retain: true}, () => {
+    Sandbox.combineBool = function Sandbox_combineBool(srcs, target) {
+        function combine() {
             let result = 0;
             srcs.forEach(src => {
                 if (Sandbox.getValue(src)) {
                     result = 1;
                 }
             });
-            if (Sandbox.getValue(target) !== result) {
-                Sandbox.setValue(target, result);
-            }
-        });
+            Sandbox.setValue(target, result);
+        }
+        combine();
+        Sandbox.subscribe(srcs, {retain: true}, combine);
+    };
+
+    /**
+     * Publish maximum of combined topics
+     * @method combineMax
+     * @param {string[]} srcs - array of topics to subscribe
+     * @param {string} targets - topic to publish
+     */
+    Sandbox.combineMax = function (srcs, target) {
+        function combine() {
+            let result = 0;
+            srcs.forEach(src => {
+                const srcVal = Sandbox.getValue(src);
+                if (srcVal > result) {
+                    result = srcVal;
+                }
+            });
+            Sandbox.setValue(target, result);
+        }
+        combine();
+        Sandbox.subscribe(srcs, {retain: true}, combine);
     };
 
     const timeouts = {};

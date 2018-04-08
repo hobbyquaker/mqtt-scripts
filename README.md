@@ -207,8 +207,11 @@ subscribe('$Anwesenheit', {change: true}, function () {
 <dt><a href="#link">link(source, target, [value])</a></dt>
 <dd><p>Link topic(s) to other topic(s)</p>
 </dd>
-<dt><a href="#combineBool">combineBool(targets, srcs)</a></dt>
+<dt><a href="#combineBool">combineBool(srcs, targets)</a></dt>
 <dd><p>Combine topics through boolean or</p>
+</dd>
+<dt><a href="#combineMax">combineMax(srcs, targets)</a></dt>
+<dd><p>Publish maximum of combined topics</p>
 </dd>
 <dt><a href="#timer">timer(src, target, time)</a></dt>
 <dd><p>Publishes 1 on target for specific time after src changed to true</p>
@@ -435,15 +438,27 @@ Link topic(s) to other topic(s)
 
 <a name="combineBool"></a>
 
-## combineBool(targets, srcs)
+## combineBool(srcs, targets)
 Combine topics through boolean or
 
 **Kind**: global function  
 
 | Param | Type | Description |
 | --- | --- | --- |
-| targets | <code>string</code> | topic to publish |
 | srcs | <code>Array.&lt;string&gt;</code> | array of topics to subscribe |
+| targets | <code>string</code> | topic to publish |
+
+<a name="combineMax"></a>
+
+## combineMax(srcs, targets)
+Publish maximum of combined topics
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| srcs | <code>Array.&lt;string&gt;</code> | array of topics to subscribe |
+| targets | <code>string</code> | topic to publish |
 
 <a name="timer"></a>
 
