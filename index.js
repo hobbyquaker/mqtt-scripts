@@ -36,6 +36,7 @@ const watch = modules.watch;
 const scheduler = modules['node-schedule'];
 const suncalc = modules.suncalc;
 
+const sandboxModules = [];
 const status = {};
 const scripts = {};
 const subscriptions = [];
@@ -656,19 +657,6 @@ function runScript(script, name) {
             return status[topic] && status[topic].val;
         },
         /**
-         * Link topic(s) to other topic(s)
-         * @method link
-         * @param {(string|string[])} source - topic or array of topics to subscribe
-         * @param {(string|string[])} target - topic or array of topics to publish
-         * @param {mixed} [value] - value to publish. If omitted the sources value is published.
-         */
-        link: function Sandbox_link(source, target, /* optional */ value) {
-            Sandbox.subscribe(source, (topic, val) => {
-                val = (typeof value === 'undefined') ? val : value;
-                Sandbox.setValue(target, val);
-            });
-        },
-        /**
          * Get a specific property of a topic
          * @method getProp
          * @param {string} topic
@@ -693,23 +681,6 @@ function runScript(script, name) {
                 return tmp;
             }
             return status[topic];
-        },
-        /**
-         *
-         * @method now
-         * @returns {number} ms since epoch
-         */
-        now: function Sandbox_now() {
-            return (new Date()).getTime();
-        },
-        /**
-         *
-         * @method age
-         * @param {string} topic
-         * @returns {number} seconds since last change
-         */
-        age: function Sandbox_age(topic) {
-            return Math.round(((new Date()).getTime() - Sandbox.getProp(topic, 'lc')) / 1000);
         }
 
     };
@@ -718,6 +689,10 @@ function runScript(script, name) {
         log: Sandbox.log.info,
         error: Sandbox.log.error
     };
+
+    sandboxModules.forEach(md => {
+        md(Sandbox);
+    });
 
     log.debug(name, 'contextifying sandbox');
     const context = vm.createContext(Sandbox);
@@ -788,6 +763,44 @@ function loadScript(file) {
     });
 }
 
+function loadSandbox(callback) {
+    const dir = path.join(__dirname, 'sandbox');
+    fs.readdir(dir, (err, data) => {
+        /* istanbul ignore if */
+        if (err) {
+            if (err.errno === 34) {
+                log.error('directory ' + path.resolve(dir) + ' not found');
+            } else {
+                log.error('readdir', dir, err);
+            }
+        } else {
+            data.sort().forEach(file => {
+                if (file.match(/\.js$/)) {
+                    sandboxModules.push(require(path.join(dir, file)));
+                }
+            });
+
+            if (!config['disable-watch']) {
+                watch.watchTree(dir, {
+                    filter(path) {
+                        return path.match(/\.js$/);
+                    }
+                }, (f, curr, prev) => {
+                    if (typeof f === 'object' && prev === null && curr === null) {
+                        log.debug('watch', dir, 'initialized');
+                    } else {
+                        watch.unwatchTree(dir);
+                        log.info(f, 'change detected. exiting.');
+                        process.exit(0);
+                    }
+                });
+            }
+
+            callback();
+        }
+    });
+}
+
 function loadDir(dir) {
     fs.readdir(dir, (err, data) => {
         /* istanbul ignore if */
@@ -835,16 +848,18 @@ function start() {
         }
     }
 
-    if (config.dir) {
-        /* istanbul ignore else */
-        if (typeof config.dir === 'string') {
-            loadDir(config.dir);
-        } else {
-            config.dir.forEach(dir => {
-                loadDir(dir);
-            });
+    loadSandbox(() => {
+        if (config.dir) {
+            /* istanbul ignore else */
+            if (typeof config.dir === 'string') {
+                loadDir(config.dir);
+            } else {
+                config.dir.forEach(dir => {
+                    loadDir(dir);
+                });
+            }
         }
-    }
+    });
 }
 
 /* istanbul ignore next */

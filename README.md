@@ -1,6 +1,5 @@
 # mqtt-scripts
 
-[![mqtt-smarthome](https://img.shields.io/badge/mqtt-smarthome-blue.svg)](https://github.com/mqtt-smarthome/mqtt-smarthome)
 [![NPM version](https://badge.fury.io/js/mqtt-scripts.svg)](http://badge.fury.io/js/mqtt-scripts)
 [![Dependency Status](https://img.shields.io/gemnasium/hobbyquaker/mqtt-scripts.svg?maxAge=2592000)](https://gemnasium.com/github.com/hobbyquaker/mqtt-scripts)
 [![Build Status](https://travis-ci.org/hobbyquaker/mqtt-scripts.svg?branch=master)](https://travis-ci.org/hobbyquaker/mqtt-scripts)
@@ -198,9 +197,6 @@ subscribe('$Anwesenheit', {change: true}, function () {
 </dd>
 <dt><a href="#getValue">getValue(topic)</a> ⇒ <code>mixed</code></dt>
 <dd></dd>
-<dt><a href="#link">link(source, target, [value])</a></dt>
-<dd><p>Link topic(s) to other topic(s)</p>
-</dd>
 <dt><a href="#getProp">getProp(topic, [...property])</a> ⇒ <code>mixed</code></dt>
 <dd><p>Get a specific property of a topic</p>
 </dd>
@@ -208,6 +204,15 @@ subscribe('$Anwesenheit', {change: true}, function () {
 <dd></dd>
 <dt><a href="#age">age(topic)</a> ⇒ <code>number</code></dt>
 <dd></dd>
+<dt><a href="#link">link(source, target, [value])</a></dt>
+<dd><p>Link topic(s) to other topic(s)</p>
+</dd>
+<dt><a href="#combineBool">combineBool(targets, srcs)</a></dt>
+<dd><p>Combine topics through boolean or</p>
+</dd>
+<dt><a href="#timer">timer(src, target, time)</a></dt>
+<dd><p>Publishes 1 on target for specific time after src changed to true</p>
+</dd>
 </dl>
 
 ## Typedefs
@@ -382,19 +387,6 @@ Set a value on one or more topics
 | --- | --- |
 | topic | <code>string</code> | 
 
-<a name="link"></a>
-
-## link(source, target, [value])
-Link topic(s) to other topic(s)
-
-**Kind**: global function  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| source | <code>string</code> \| <code>Array.&lt;string&gt;</code> | topic or array of topics to subscribe |
-| target | <code>string</code> \| <code>Array.&lt;string&gt;</code> | topic or array of topics to publish |
-| [value] | <code>mixed</code> | value to publish. If omitted the sources value is published. |
-
 <a name="getProp"></a>
 
 ## getProp(topic, [...property]) ⇒ <code>mixed</code>
@@ -427,6 +419,44 @@ getProp('hm//Bewegungsmelder Keller/MOTION', 'ts');
 | Param | Type |
 | --- | --- |
 | topic | <code>string</code> | 
+
+<a name="link"></a>
+
+## link(source, target, [value])
+Link topic(s) to other topic(s)
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| source | <code>string</code> \| <code>Array.&lt;string&gt;</code> | topic or array of topics to subscribe |
+| target | <code>string</code> \| <code>Array.&lt;string&gt;</code> | topic or array of topics to publish |
+| [value] | <code>mixed</code> | value to publish. If omitted the sources value is published. |
+
+<a name="combineBool"></a>
+
+## combineBool(targets, srcs)
+Combine topics through boolean or
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| targets | <code>string</code> | topic to publish |
+| srcs | <code>Array.&lt;string&gt;</code> | array of topics to subscribe |
+
+<a name="timer"></a>
+
+## timer(src, target, time)
+Publishes 1 on target for specific time after src changed to true
+
+**Kind**: global function  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| src | <code>string</code> \| <code>Array.&lt;string&gt;</code> | topic or array of topics to subscribe |
+| target | <code>string</code> | topic to publish |
+| time | <code>number</code> | timeout in milliseconds |
 
 <a name="subscribeCallback"></a>
 
