@@ -75,7 +75,8 @@
   "nyc": {
     "include": [
       "index.js",
-      "config.js"
+      "config.js",
+      "sandbox/*.js"
     ]
   }
 }
