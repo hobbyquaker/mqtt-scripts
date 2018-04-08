@@ -1,6 +1,6 @@
 {
   "name": "mqtt-scripts",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Node.js based script runner for use in MQTT based Smart Home environments",
   "main": "index.js",
   "scripts": {
