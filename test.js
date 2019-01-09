@@ -415,6 +415,15 @@ describe('link()', () => {
         });
         mqtt.publish('test/src3', 'test');
     });
+    it('should link one topic to another with transformation function', function (done) {
+        this.timeout(20000);
+        mqttSubscribe('test/target4', payload => {
+            if (payload === '4') {
+                done();
+            }
+        });
+        mqtt.publish('test/src4', '2');
+    });
 });
 
 describe('age()', () => {

@@ -15,7 +15,7 @@ subscribe('test/target', () => {
 link('test/src', 'test/target');
 link(['test/src1', 'test/src2'], ['test/target1', 'test/target2']);
 link('test/src3', 'test/target3', '1337');
-
+link('test/src4', 'test/target4', val => 2 * val);
 
 schedule('* * * * *', () => {
     log.info('schedule callback');
