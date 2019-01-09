@@ -18,7 +18,7 @@
     "suncalc": "^1.8.0",
     "watch": "^1.0.2",
     "yalm": "^4.0.2",
-    "yargs": "^11.1.0"
+    "yargs": "^12.0.5"
   },
   "engines": {
     "node": ">= 6.0.0"
@@ -26,16 +26,16 @@
   "engineStrict": true,
   "preferGlobal": true,
   "devDependencies": {
-    "camo-purge": "latest",
-    "coveralls": "latest",
-    "gulp": "latest",
-    "jsdoc-to-markdown": "latest",
-    "mocha": "latest",
-    "nyc": "latest",
-    "should": "latest",
-    "stream-splitter": "latest",
-    "timekeeper": "latest",
-    "xo": "latest"
+    "camo-purge": "1.0.2",
+    "coveralls": "3.0.2",
+    "gulp": "4.0.0",
+    "jsdoc-to-markdown": "4.0.1",
+    "mocha": "5.2.0",
+    "nyc": "13.1.0",
+    "should": "13.2.3",
+    "stream-splitter": "0.3.2",
+    "timekeeper": "2.1.2",
+    "xo": "0.23.0"
   },
   "directories": {
     "doc": "doc"
