@@ -1,7 +1,7 @@
 # mqtt-scripts
 
 [![NPM version](https://badge.fury.io/js/mqtt-scripts.svg)](http://badge.fury.io/js/mqtt-scripts)
-[![Dependency Status](https://img.shields.io/gemnasium/hobbyquaker/mqtt-scripts.svg?maxAge=2592000)](https://gemnasium.com/github.com/hobbyquaker/mqtt-scripts)
+[![dependencies Status](https://david-dm.org/hobbyquaker/mqtt-scripts/status.svg)](https://david-dm.org/hobbyquaker/mqtt-scripts)
 [![Build Status](https://travis-ci.org/hobbyquaker/mqtt-scripts.svg?branch=master)](https://travis-ci.org/hobbyquaker/mqtt-scripts)
 [![Coverage Status](https://coveralls.io/repos/github/hobbyquaker/mqtt-scripts/badge.svg?branch=master)](https://coveralls.io/github/hobbyquaker/mqtt-scripts?branch=master)
 [![XO code style](https://img.shields.io/badge/code_style-XO-5ed9c7.svg)](https://github.com/sindresorhus/xo)
