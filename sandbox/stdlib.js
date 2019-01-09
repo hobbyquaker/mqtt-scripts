@@ -23,11 +23,15 @@ module.exports = function (Sandbox) {
      * @method link
      * @param {(string|string[])} source - topic or array of topics to subscribe
      * @param {(string|string[])} target - topic or array of topics to publish
-     * @param {mixed} [value] - value to publish. If omitted the sources value is published.
+     * @param {mixed} [value] - value to publish. If omitted the sources value is published. A function can be used to transform the value.
      */
     Sandbox.link = function Sandbox_link(source, target, /* optional */ value) {
         Sandbox.subscribe(source, (topic, val) => {
-            val = (typeof value === 'undefined') ? val : value;
+            if (typeof value === 'function') {
+                val = value(val);
+            } else if (typeof value !== 'undefined') {
+                val = value;
+            }
             Sandbox.setValue(target, val);
         });
     };
