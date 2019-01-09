@@ -8,6 +8,9 @@
     "testonly": "mocha test.js --exit",
     "lintfix": "xo --fix"
   },
+  "bin": {
+    "mqtt-scripts": "index.js"
+  },
   "author": "Sebastian 'hobbyquaker' Raff <hobbyquaker@gmail.com>",
   "license": "MIT",
   "dependencies": {
