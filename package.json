@@ -70,7 +70,11 @@
       "test.js",
       "Gulpfile.js",
       "mockdate.js"
-    ]
+    ],
+    "rules": {
+      "unicorn/catch-error-name": 1,
+      "prefer-spread": 1
+    }
   },
   "nyc": {
     "include": [
