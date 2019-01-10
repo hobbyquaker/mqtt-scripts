@@ -15,6 +15,7 @@ const pkg = require('./package.json');
 /* istanbul ignore next */
 log.setLevel(['debug', 'info', 'warn', 'error'].indexOf(config.verbosity) === -1 ? 'info' : config.verbosity);
 log.info(pkg.name + ' ' + pkg.version + ' starting');
+log.debug("loaded config: ", config);
 
 const modules = {
     fs: require('fs'),
