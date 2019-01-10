@@ -55,9 +55,9 @@ function calculateSunTimes() {
     const yesterday = new Date(today.getTime() - 86400000); // (24 * 60 * 60 * 1000));
     const tomorrow = new Date(today.getTime() + 86400000); // (24 * 60 * 60 * 1000));
     sunTimes = [
-        suncalc.getTimes(yesterday, config.l, config.m),
-        suncalc.getTimes(today, config.l, config.m),
-        suncalc.getTimes(tomorrow, config.l, config.m)
+        suncalc.getTimes(yesterday, config.latitude, config.longitude),
+        suncalc.getTimes(today, config.latitude, config.longitude),
+        suncalc.getTimes(tomorrow, config.latitude, config.longitude)
     ];
 }
 
@@ -187,7 +187,7 @@ mqtt.on('message', (topic, payload, msg) => {
     const topicArr = topic.split('/');
     let oldState;
 
-    if (topicArr[0] === config.s && topicArr[1] === 'set' && !config.t) {
+    if (topicArr[0] === config.variablePrefix && topicArr[1] === 'set' && !config.disableVariables) {
         topicArr[1] = 'status';
         topic = topicArr.join('/');
         oldState = status[topic] || {};
@@ -415,7 +415,7 @@ function runScript(script, name) {
             }
 
             if (typeof topic === 'string') {
-                topic = topic.replace(/^\$/, config.s + '/status/');
+                topic = topic.replace(/^\$/, config.variablePrefix + '/status/');
                 topic = topic.replace(/^([^/]+)\/\//, '$1/status/');
 
                 if (typeof options.condition === 'string') {
@@ -606,10 +606,10 @@ function runScript(script, name) {
 
             let changed;
 
-            topic = topic.replace(/^\$/, config.s + '//');
+            topic = topic.replace(/^\$/, config.variablePrefix + '//');
 
             const tmp = topic.split('/');
-            if (tmp[0] === config.s && !config.t) {
+            if (tmp[0] === config.variablePrefix && !config.disableVariables) {
                 // Variable
 
                 tmp[1] = 'status';
@@ -631,7 +631,7 @@ function runScript(script, name) {
                     Sandbox.publish(topic, val, {retain: true});
                 }
             /* istanbul ignore next */ // TODO tests!
-            } else if (tmp[0] === config.s && config.t) {
+            } else if (tmp[0] === config.variablePrefix && config.disableVariables) {
                 /* istanbul ignore next */
                 tmp[1] = 'status';
                 topic = tmp.join('/');
@@ -653,7 +653,7 @@ function runScript(script, name) {
          * @returns {mixed} the topics value
          */
         getValue: function Sandbox_getValue(topic) {
-            topic = topic.replace(/^\$/, config.s + '/status/');
+            topic = topic.replace(/^\$/, config.variablePrefix + '/status/');
             topic = topic.replace(/^([^/]+)\/\/(.+)$/, '$1/status/$2');
             return status[topic] && status[topic].val;
         },
@@ -781,7 +781,7 @@ function loadSandbox(callback) {
                 }
             });
 
-            if (!config['disable-watch']) {
+            if (!config.disableWatch) {
                 watch.watchTree(dir, {
                     filter(path) {
                         return path.match(/\.js$/);
@@ -818,7 +818,7 @@ function loadDir(dir) {
                 }
             });
 
-            if (!config['disable-watch']) {
+            if (!config.disableWatch) {
                 watch.watchTree(dir, {
                     filter(path) {
                         return path.match(/\.(js|coffee)$/);
