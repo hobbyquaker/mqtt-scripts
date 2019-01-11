@@ -46,30 +46,72 @@ echo "log.info 'get ma a coffee' > /opt/mqtt-smarthome/scripts/test1.coffee
 ```mqtt-scripts -d /opt/mqtt-smarthome/scripts```  
 
 
+### Run with Docker
+
+To run with Docker, use either a [pre-build image](https://hub.docker.com/r/dersimn/mqtt-scripts) or build one your own. Either way, just substitude the node-command you would have used by the Docker command, for e.g.:
+
+```mqtt-scripts --help```  
+
+becomes
+
+```docker run dersimn/mqtt-scripts --help```
+
+An example for a productive configuration would be:
+
+```
+docker run -d --restart=always --name=logic \
+    -e "TZ=Europe/Berlin" \
+    -v /opt/hma/etc/scripts:/scripts:ro \
+    dersimn/mqtt-scripts \
+    --url mqtt://10.1.1.50 \
+    --dir /scripts
+```
+
+Configure via `MQTTSCRIPTS_` env variables when using Docker Compose.
+
+
+#### Build
+
+To build a Docker image yourself use the following workflow:
+
+```
+git clone https://github.com/hobbyquaker/mqtt-scripts.git
+cd mqtt-scripts
+docker build -t mqtt-scripts .
+```
+
+To build for the Raspberry Pi, run:
+
+```
+docker build -t mqtt-scripts:armhf -f Dockerfile.armhf .
+```
+
+
 # Command Line Options
 
 <pre>
 Usage: mqtt-scripts [options]
 
 Options:
-  -v, --verbosity          possible values: "error", "warn", "info", "debug"
-                                                               [default: "info"]
-  -n, --name               instance name. used as mqtt client id and as prefix
-                           for connected topic                [default: "logic"]
-  -s, --variable-prefix    topic prefix for $ substitution (shorthand for
-                           variables, see docs)                 [default: "var"]
-  -t, --disable-variables  disable variable feedback (see docs)
-                                                                [default: false]
-  -u, --url                mqtt broker url. See https://github.com/mqttjs/MQTT.
-                           js#connect-using-a-url  [default: "mqtt://127.0.0.1"]
-  -h, --help               Show help                                  
+  --version                Show version number                         [boolean]
+  -c, --config             Path to JSON config file
   -d, --dir                directory to scan for .js and .coffee files. can be
                            used multiple times.
+  -h, --help               Show help                                   [boolean]
+  -s, --variable-prefix    topic prefix for $ substitution (shorthand for
+                           variables, see docs)                 [default: "var"]
+  -t, --disable-variables  disable variable feedback (see docs) [default: false]
+  -n, --name               instance name. used as mqtt client id and as prefix
+                           for connected topic                [default: "logic"]
+  -u, --url                mqtt broker url. See
+                           https://github.com/mqttjs/MQTT.js#connect-using-a-url
+                                                   [default: "mqtt://127.0.0.1"]
+  -v, --verbosity          possible values: "error", "warn", "info", "debug"
+                                                               [default: "info"]
   -w, --disable-watch      disable file watching (don't exit process on file
-                           changes)                             
-  --version                Show version number                        
-  -l, --latitude           Coordinates are needed for the sunSchedule method                                  
-  -m, --longitude                                             
+                           changes)                             [default: false]
+  -l, --latitude                                              [default: 48.7408]
+  -m, --longitude                                              [default: 9.1778]                                            
 </pre>
 
 If you're running multiple instances of mqtt-scripts you have to decide which one should handle variables and disable 
