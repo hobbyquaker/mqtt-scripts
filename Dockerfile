@@ -1,8 +1,17 @@
+FROM node as jsbuilder
+
+COPY . /app
+WORKDIR /app
+
+RUN npm install
+
+# ---------------------------------------------------------
+
 FROM node:slim
 
-COPY . /node
+COPY --from=jsbuilder /app /app
 
-RUN cd /node && \
-	npm install
+WORKDIR /app
 
-ENTRYPOINT [ "node", "/node/index.js" ]
+EXPOSE 3000
+ENTRYPOINT [ "node", "index.js" ]
