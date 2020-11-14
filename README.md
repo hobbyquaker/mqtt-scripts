@@ -54,7 +54,7 @@ To run with Docker, use either a [pre-build image](https://hub.docker.com/r/ders
 
 becomes
 
-```docker run dersimn/mqtt-scripts --help```
+```docker run dersimn/mqtt-scripts:1 --help```
 
 An example for a productive configuration would be:
 
@@ -62,7 +62,7 @@ An example for a productive configuration would be:
 docker run -d --restart=always --name=logic \
     -e "TZ=Europe/Berlin" \
     -v /opt/hma/etc/scripts:/scripts:ro \
-    dersimn/mqtt-scripts \
+    dersimn/mqtt-scripts:1 \
     --url mqtt://10.1.1.50 \
     --dir /scripts
 ```
@@ -72,19 +72,16 @@ Configure via `MQTTSCRIPTS_` env variables when using Docker Compose.
 
 #### Build
 
-To build a Docker image yourself use the following workflow:
+Docker development build:
 
-```
-git clone https://github.com/hobbyquaker/mqtt-scripts.git
-cd mqtt-scripts
-docker build -t mqtt-scripts .
-```
+    docker build -t mqtt-scripts .
+    docker run --rm mqtt-scripts --help
 
-To build for the Raspberry Pi, run:
+Docker Hub deploy:
 
-```
-docker build -t mqtt-scripts:armhf -f Dockerfile.armhf .
-```
+    docker buildx create --name mybuilder
+    docker buildx use mybuilder
+    docker buildx build --platform linux/amd64,linux/arm/v7 -t dersimn/mqtt-scripts:1 -t dersimn/mqtt-scripts:1.x.x --push .
 
 
 # Command Line Options
