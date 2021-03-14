@@ -107,6 +107,8 @@ Options:
                                                                [default: "info"]
   -w, --disable-watch      disable file watching (don't exit process on file
                            changes)                             [default: false]
+  --disable-lwt            disable last-will-and-testament (usefull if the
+                           remote broker is read-only)          [default: false]
   -l, --latitude                                              [default: 48.7408]
   -m, --longitude                                              [default: 9.1778]                                            
 </pre>
