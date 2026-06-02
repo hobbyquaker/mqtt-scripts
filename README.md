@@ -10,6 +10,8 @@
 
 > mqtt-scripts is a Node.js based script runner for use in mqtt based smart home environments. 
 
+# Project deprecated. Take a look at it's successor: https://github.com/hobbyquaker/she
+
 It's intentended to be used as the "logic layer" in your smart home, and offers a zero-boilerplate, straight forward 
 scripting environment.
 
