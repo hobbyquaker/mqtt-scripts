@@ -9,6 +9,7 @@ const config = require('yargs')
     .describe('help', 'show help')
     .describe('dir', 'directory to scan for .js and .coffee files. can be used multiple times.')
     .describe('disable-watch', 'disable file watching (don\'t exit process on file changes)')
+    .describe('disable-lwt', 'disable last-will-and-testament (usefull if the remote broker is read-only)')
     .alias({
         c: 'config',
         d: 'dir',
@@ -21,7 +22,6 @@ const config = require('yargs')
         u: 'url',
         v: 'verbosity',
         w: 'disable-watch'
-
     })
     .default({
         url: 'mqtt://127.0.0.1',
@@ -31,7 +31,8 @@ const config = require('yargs')
         'variable-prefix': 'var',
         verbosity: 'info',
         'disable-variables': false,
-        'disable-watch': false
+        'disable-watch': false,
+        'disable-lwt': false
     })
     .config('config')
     .version()

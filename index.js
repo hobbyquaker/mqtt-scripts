@@ -117,8 +117,17 @@ function sunScheduleEvent(obj, shift) {
 }
 
 // MQTT
-const mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/connected', payload: '0', retain: true}});
-mqtt.publish(config.name + '/connected', '2', {retain: true});
+function connect(config) {
+    var mqtt;
+    if (config.disableLwt) {
+        mqtt = modules.mqtt.connect(config.url);
+    } else {
+        mqtt = modules.mqtt.connect(config.url, {will: {topic: config.name + '/connected', payload: '0', retain: true}});
+        mqtt.publish(config.name + '/connected', '2', {retain: true});
+    }
+    return mqtt;
+}
+const mqtt = connect(config);
 
 let firstConnect = true;
 let startTimeout;
